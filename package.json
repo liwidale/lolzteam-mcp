@@ -24,7 +24,8 @@
     "format:check": "prettier --check .",
     "smoke": "npm run build && node scripts/smoke.ts",
     "generate": "node scripts/generate.ts",
-    "sync": "node scripts/generate.ts --download"
+    "sync": "node scripts/generate.ts --download",
+    "prepublishOnly": "npm run build"
   },
   "keywords": [
     "mcp",

@@ -123,6 +123,56 @@ export const ru: Messages = {
       "Сузьте запрос через limit, page, фильтры или fields_include либо увеличьте max_chars.",
   },
 
+  cli: {
+    help: [
+      "Использование:",
+      "  lolzteam-mcp             Запустить MCP-сервер через stdio. Эту команду запускают MCP-клиенты.",
+      "  lolzteam-mcp setup       Проверить токен и добавить сервер в Claude Desktop, Cursor и Windsurf.",
+      "  lolzteam-mcp --version   Показать версию.",
+      "",
+      "Параметры setup:",
+      "  --yes                    Настроить все найденные клиенты без вопросов.",
+      "  --client <id>            Настроить только этот клиент: claude-desktop, cursor или windsurf. Повторите для нескольких клиентов.",
+    ].join("\n"),
+    unknownCommand: (command) => `Неизвестная команда "${command}".`,
+    badOptions: "Неизвестный параметр настройки или не указано значение.",
+  },
+
+  setup: {
+    title: (version) => `Настройка LOLZTEAM MCP ${version}`,
+    tokenHelp:
+      "Создайте API-клиент на https://lolz.live/account/api/client-add, затем получите токен на https://lolz.live/account/api/get-token с областями read, basic, post и market.",
+    tokenPrompt: "Токен API (ввод скрыт): ",
+    tokenFromEnv: "Используется токен из LOLZTEAM_TOKEN.",
+    needToken:
+      "Нет терминала для ввода токена. Задайте LOLZTEAM_TOKEN и запустите настройку снова.",
+    tokenFormat:
+      "Токен должен быть одной строкой из печатных символов ASCII. Скопируйте его еще раз и запустите настройку.",
+    checking: "Проверяю токен...",
+    forumOk: (username) => `Forum API: вход выполнен как ${username}.`,
+    forumFailed: (message) => `Forum API: ${message}`,
+    marketOk: "Market API: доступен.",
+    marketFailed: (message) => `Market API: ${message} Инструменты форума при этом работают.`,
+    tokenRejected:
+      "API отклонил токен. Создайте новый токен и запустите настройку снова. Ничего не изменено.",
+    detected: "Найдены MCP-клиенты:",
+    choose: "Какие клиенты настроить, номера через запятую. Enter, чтобы настроить все: ",
+    unknownClients: (unknown, known) =>
+      `Неизвестные клиенты: ${unknown}. Поддерживаются: ${known}.`,
+    noClients:
+      "Ни один поддерживаемый MCP-клиент не настроен. Добавьте сервер в свой клиент вручную по инструкции из README.",
+    configured: (name, path) => `${name}: сервер lolzteam добавлен в ${path}`,
+    backup: (path) => `  Предыдущая конфигурация сохранена в ${path}`,
+    invalidConfig: (name, path) =>
+      `${name}: ${path} содержит некорректный JSON. Исправьте или удалите файл и запустите настройку снова.`,
+    writeFailed: (name, message) => `${name}: не удалось записать конфигурацию: ${message}`,
+    claudeCode: "Claude Code: выполните эту команду, подставив свой токен вместо <token>:",
+    restart:
+      "Перезапустите настроенные клиенты. Сервер lolzteam и его инструменты появятся после перезапуска.",
+    manual: "Добавьте сервер в свой клиент и перезапустите его.",
+    cancelled: "Настройка отменена. Ничего не изменено.",
+  },
+
   common: {
     page: "Номер страницы, начиная с 1.",
     limit: "Результатов на странице.",

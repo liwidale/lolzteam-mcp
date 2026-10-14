@@ -119,6 +119,57 @@ export const en = {
       "Narrow the request with limit, page, filters or fields_include, or raise max_chars.",
   },
 
+  cli: {
+    help: [
+      "Usage:",
+      "  lolzteam-mcp             Start the MCP server on stdio. MCP clients run this command.",
+      "  lolzteam-mcp setup       Check a token and add the server to Claude Desktop, Cursor and Windsurf.",
+      "  lolzteam-mcp --version   Print the version.",
+      "",
+      "Setup options:",
+      "  --yes                    Configure every detected client without asking.",
+      "  --client <id>            Configure only this client: claude-desktop, cursor or windsurf. Repeat it for several clients.",
+    ].join("\n"),
+    unknownCommand: (command: string) => `Unknown command "${command}".`,
+    badOptions: "Unknown setup option or missing value.",
+  },
+
+  setup: {
+    title: (version: string) => `LOLZTEAM MCP ${version} setup`,
+    tokenHelp:
+      "Create an API client at https://lolz.live/account/api/client-add, then get a token at https://lolz.live/account/api/get-token with the read, basic, post and market scopes.",
+    tokenPrompt: "API token (input is hidden): ",
+    tokenFromEnv: "Using the token from LOLZTEAM_TOKEN.",
+    needToken:
+      "There is no terminal to type the token into. Set LOLZTEAM_TOKEN and run the setup again.",
+    tokenFormat:
+      "The token must be a single line of printable ASCII characters. Copy it again and run the setup.",
+    checking: "Checking the token...",
+    forumOk: (username: string) => `Forum API: signed in as ${username}.`,
+    forumFailed: (message: string) => `Forum API: ${message}`,
+    marketOk: "Market API: available.",
+    marketFailed: (message: string) => `Market API: ${message} The forum tools still work.`,
+    tokenRejected:
+      "The API rejected the token. Create a new token and run the setup again. Nothing was changed.",
+    detected: "Found these MCP clients:",
+    choose: "Clients to configure, as numbers separated by commas. Press Enter for all: ",
+    unknownClients: (unknown: string, known: string) =>
+      `Unknown clients: ${unknown}. Supported clients: ${known}.`,
+    noClients:
+      "No supported MCP client was configured. Add the server to your client by hand with the settings from the README.",
+    configured: (name: string, path: string) => `${name}: added the lolzteam server to ${path}`,
+    backup: (path: string) => `  The previous configuration is saved in ${path}`,
+    invalidConfig: (name: string, path: string) =>
+      `${name}: ${path} is not valid JSON. Fix or remove the file, then run the setup again.`,
+    writeFailed: (name: string, message: string) =>
+      `${name}: could not write the configuration: ${message}`,
+    claudeCode: "Claude Code: run this command with your token in place of <token>:",
+    restart:
+      "Restart the configured clients. The lolzteam server and its tools appear after the restart.",
+    manual: "Add the server to your client and restart it.",
+    cancelled: "Setup cancelled. Nothing was changed.",
+  },
+
   common: {
     page: "Page number, starting at 1.",
     limit: "Results per page.",

@@ -33,10 +33,14 @@ function read(env: Env, name: string): string | undefined {
   return value ? value : undefined;
 }
 
+export function isValidToken(token: string): boolean {
+  return token.length <= 4096 && /^[\x21-\x7e]+$/.test(token);
+}
+
 function readToken(env: Env, name: string): string | undefined {
   const token = read(env, name);
   if (token === undefined) return undefined;
-  if (token.length > 4096 || !/^[\x21-\x7e]+$/.test(token)) {
+  if (!isValidToken(token)) {
     throw new ConfigError(messages.config.token(name));
   }
   return token;
