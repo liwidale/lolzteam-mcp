@@ -1,6 +1,7 @@
 import { invalidInput } from "../errors.ts";
 import type { JsonObject } from "../http/client.ts";
 import type { Query, QueryScalar, QueryValue } from "../http/query.ts";
+import { messages } from "../i18n/index.ts";
 import { forumCatalog } from "./forum.generated.ts";
 import { marketCatalog } from "./market.generated.ts";
 import type { Endpoint, EndpointCatalog, EndpointParam } from "./types.ts";
@@ -32,13 +33,9 @@ export function findEndpoint(service: Service, operation: string): [string, Endp
   if (match !== undefined && found) return [match, found];
   const blocked = Object.keys(excluded).find((id) => id.toLowerCase() === operation.toLowerCase());
   if (blocked !== undefined) {
-    throw invalidInput(
-      `${blocked} is not available: it is excluded by the read-only policy (${excluded[blocked] ?? ""}).`,
-    );
+    throw invalidInput(messages.validation.excludedOperation(blocked, excluded[blocked] ?? ""));
   }
-  throw invalidInput(
-    `Unknown ${service} operation "${operation}". Call api_list_endpoints to see the available operations.`,
-  );
+  throw invalidInput(messages.validation.unknownOperation(service, operation));
 }
 
 export function findParam(endpoint: Endpoint, name: string): EndpointParam | undefined {
@@ -49,31 +46,31 @@ export function findParam(endpoint: Endpoint, name: string): EndpointParam | und
 }
 
 function checkScalar(param: EndpointParam, kind: string | undefined, value: unknown): QueryScalar {
-  const label = `Parameter "${param.name}"`;
   if (kind === "boolean") {
-    if (typeof value !== "boolean") throw invalidInput(`${label} expects true or false.`);
+    if (typeof value !== "boolean")
+      throw invalidInput(messages.validation.expectsBoolean(param.name));
     return value;
   }
   if (kind === "integer" || kind === "number") {
     const numeric = typeof value === "string" && value.trim() !== "" ? Number(value) : value;
     if (typeof numeric !== "number" || !Number.isFinite(numeric)) {
-      throw invalidInput(`${label} expects a number.`);
+      throw invalidInput(messages.validation.expectsNumber(param.name));
     }
     if (kind === "integer" && !Number.isInteger(numeric)) {
-      throw invalidInput(`${label} expects a whole number.`);
+      throw invalidInput(messages.validation.expectsInteger(param.name));
     }
     if (param.values && !param.values.map(Number).includes(numeric)) {
-      throw invalidInput(`${label} must be one of: ${param.values.join(", ")}.`);
+      throw invalidInput(messages.validation.oneOf(param.name, param.values.join(", ")));
     }
     return numeric;
   }
   if (typeof value !== "string" && typeof value !== "number") {
-    throw invalidInput(`${label} expects text.`);
+    throw invalidInput(messages.validation.expectsText(param.name));
   }
   const text = String(value);
-  if (text.length > 500) throw invalidInput(`${label} is too long.`);
+  if (text.length > 500) throw invalidInput(messages.validation.tooLong(param.name));
   if (param.values && !param.values.map(String).includes(text)) {
-    throw invalidInput(`${label} must be one of: ${param.values.join(", ")}.`);
+    throw invalidInput(messages.validation.oneOf(param.name, param.values.join(", ")));
   }
   return text;
 }
@@ -82,30 +79,30 @@ function toValue(param: EndpointParam, value: ParamValue): QueryValue {
   if (param.type === "array") {
     const list = Array.isArray(value) ? value : [value];
     if (list.length === 0 || list.length > 250) {
-      throw invalidInput(`Parameter "${param.name}" expects between 1 and 250 values.`);
+      throw invalidInput(messages.validation.listSize(param.name, 250));
     }
     const checked = list.map((item) => checkScalar(param, param.items, item));
     return param.csv ? checked.join(",") : checked;
   }
   if (param.type === "object") {
     if (typeof value !== "object" || Array.isArray(value)) {
-      throw invalidInput(`Parameter "${param.name}" expects an object such as {"730": 100}.`);
+      throw invalidInput(messages.validation.expectsObject(param.name));
     }
     const entries = Object.entries(value);
     if (entries.length === 0 || entries.length > 50) {
-      throw invalidInput(`Parameter "${param.name}" expects between 1 and 50 keys.`);
+      throw invalidInput(messages.validation.objectSize(param.name, 50));
     }
     return Object.fromEntries(
       entries.map(([key, item]) => {
         if (!/^[\w .:-]{1,100}$/.test(key)) {
-          throw invalidInput(`Parameter "${param.name}" has an invalid key "${key}".`);
+          throw invalidInput(messages.validation.invalidKey(param.name, key));
         }
         return [key, checkScalar(param, param.items, item)];
       }),
     );
   }
   if (Array.isArray(value) || typeof value === "object") {
-    throw invalidInput(`Parameter "${param.name}" expects a single value.`);
+    throw invalidInput(messages.validation.singleValue(param.name));
   }
   return checkScalar(param, param.type, value);
 }
@@ -113,7 +110,7 @@ function toValue(param: EndpointParam, value: ParamValue): QueryValue {
 export function buildRequest(
   endpoint: Endpoint,
   values: Readonly<Record<string, ParamValue>>,
-  unknownHint = "Call api_describe_endpoint to see the supported parameters.",
+  unknownHint = messages.validation.describeHint,
 ): BuiltRequest {
   const query: Record<string, QueryValue> = {};
   const body: JsonObject = {};
@@ -122,14 +119,14 @@ export function buildRequest(
 
   for (const [name, value] of Object.entries(values)) {
     const param = findParam(endpoint, name);
-    if (!param) throw invalidInput(`Unknown parameter "${name}". ${unknownHint}`);
+    if (!param) throw invalidInput(messages.validation.unknownParameter(name, unknownHint));
     given.add(param.name);
     const checked = toValue(param, value);
     if (param.in === "path") {
       const segment =
         typeof checked === "string" || typeof checked === "number" ? String(checked) : "";
       if (!PATH_SEGMENT.test(segment) || segment.includes("..")) {
-        throw invalidInput(`Parameter "${param.name}" must be an ID such as 123 or me.`);
+        throw invalidInput(messages.validation.pathId(param.name));
       }
       path = path.replace(`{${param.name}}`, encodeURIComponent(segment));
     } else if (param.in === "body") {
@@ -142,7 +139,7 @@ export function buildRequest(
   const missing = endpoint.params.filter((param) => param.required && !given.has(param.name));
   if (missing.length > 0) {
     throw invalidInput(
-      `Missing required parameters: ${missing.map((param) => param.name).join(", ")}.`,
+      messages.validation.missingRequired(missing.map((param) => param.name).join(", ")),
     );
   }
   return endpoint.method === "POST" ? { path, query, body } : { path, query };

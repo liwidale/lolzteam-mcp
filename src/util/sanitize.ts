@@ -1,3 +1,4 @@
+import { messages } from "../i18n/index.ts";
 import { isRecord, type JsonRecord } from "./json.ts";
 import { cleanText, compact, excerpt, isoDate } from "./text.ts";
 
@@ -34,7 +35,7 @@ export function sanitize(value: unknown, limits: SanitizeLimits, depth = 0, key 
       .map((item) => sanitize(item, limits, depth + 1))
       .filter((item) => item !== undefined);
     if (value.length > limits.maxEntries) {
-      list.push(`[${value.length - limits.maxEntries} more items omitted]`);
+      list.push(messages.output.omittedItems(value.length - limits.maxEntries));
     }
     return list.length > 0 ? list : undefined;
   }

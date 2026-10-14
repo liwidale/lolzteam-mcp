@@ -1,34 +1,18 @@
 import type { McpServer, ToolCallback } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import type { z } from "zod";
-import { LolzteamError, type ErrorCode } from "./errors.ts";
+import { LolzteamError } from "./errors.ts";
+import { messages, type ToolName } from "./i18n/index.ts";
 
 export interface ToolContext {
   signal: AbortSignal;
 }
 
 export interface ToolDefinition<Shape extends z.ZodRawShape> {
-  name: string;
-  title: string;
-  description: string;
+  name: ToolName;
   inputSchema: Shape;
   handler: (args: z.infer<z.ZodObject<Shape>>, context: ToolContext) => Promise<unknown>;
 }
-
-const HINTS: Partial<Record<ErrorCode, string>> = {
-  invalid_input: "Fix the arguments described in the message and call the tool again.",
-  not_configured:
-    "The server owner has to add an API token to the MCP server configuration. Retrying will not help.",
-  unauthorized:
-    "The configured token was rejected. Ask the user to create a new token. Retrying will not help.",
-  forbidden:
-    "The token lacks a required scope or the account has no access. Forum search needs the post scope, Market needs the market scope.",
-  not_found: "Check the identifier. The content may have been deleted or hidden.",
-  rate_limited: "Wait at least retry_after_seconds before calling this API again.",
-  upstream_unavailable: "The service is having problems. Try again in a minute.",
-  timeout: "Try again, possibly with narrower filters or a smaller page size.",
-  network_error: "Try again later. If the problem persists, the API host may be unreachable.",
-};
 
 export function successResult(data: unknown): CallToolResult {
   return { content: [{ type: "text", text: JSON.stringify(data) }] };
@@ -38,7 +22,7 @@ export function errorResult(error: unknown): CallToolResult {
   const failure =
     error instanceof LolzteamError
       ? error
-      : new LolzteamError("internal_error", "The MCP server failed to process the request.");
+      : new LolzteamError("internal_error", messages.errors.internal);
   const { status, endpoint, retryAfterSeconds, apiMessages } = failure.details;
   const body = {
     error: {
@@ -48,25 +32,36 @@ export function errorResult(error: unknown): CallToolResult {
       endpoint,
       retry_after_seconds: retryAfterSeconds,
       api_messages: apiMessages,
-      hint: HINTS[failure.code],
+      hint: messages.hints[failure.code],
     },
   };
   return { isError: true, content: [{ type: "text", text: JSON.stringify(body) }] };
+}
+
+function describeShape(name: ToolName, shape: z.ZodRawShape): z.ZodRawShape {
+  const params: Readonly<Record<string, string>> = messages.tools[name].params;
+  return Object.fromEntries(
+    Object.entries(shape).map(([key, schema]) => {
+      const description = params[key] ?? messages.common[key];
+      if (description === undefined) throw new Error(`No description for ${name}.${key}`);
+      return [key, (schema as z.ZodType).describe(description)];
+    }),
+  );
 }
 
 export function registerTool<Shape extends z.ZodRawShape>(
   server: McpServer,
   tool: ToolDefinition<Shape>,
 ): void {
+  const text = messages.tools[tool.name];
   const handler: ToolCallback<z.ZodRawShape> = async (args, extra) => {
     try {
       const input = args as z.infer<z.ZodObject<Shape>>;
       return successResult(await tool.handler(input, { signal: extra.signal }));
     } catch (error) {
       if (!(error instanceof LolzteamError)) {
-        process.stderr.write(
-          `lolzteam-mcp: ${tool.name} failed: ${error instanceof Error ? error.message : String(error)}\n`,
-        );
+        const reason = error instanceof Error ? error.message : String(error);
+        process.stderr.write(`${messages.startup.toolFailed(tool.name, reason)}\n`);
       }
       return errorResult(error);
     }
@@ -74,11 +69,11 @@ export function registerTool<Shape extends z.ZodRawShape>(
   server.registerTool<z.ZodRawShape, z.ZodRawShape>(
     tool.name,
     {
-      title: tool.title,
-      description: tool.description,
-      inputSchema: tool.inputSchema,
+      title: text.title,
+      description: text.description,
+      inputSchema: describeShape(tool.name, tool.inputSchema),
       annotations: {
-        title: tool.title,
+        title: text.title,
         readOnlyHint: true,
         destructiveHint: false,
         idempotentHint: true,

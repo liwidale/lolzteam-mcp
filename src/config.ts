@@ -1,3 +1,5 @@
+import { messages } from "./i18n/index.ts";
+
 export const DEFAULT_FORUM_BASE_URL = "https://api.lolz.live";
 export const DEFAULT_MARKET_BASE_URL = "https://api.lzt.market";
 
@@ -35,7 +37,7 @@ function readToken(env: Env, name: string): string | undefined {
   const token = read(env, name);
   if (token === undefined) return undefined;
   if (token.length > 4096 || !/^[\x21-\x7e]+$/.test(token)) {
-    throw new ConfigError(`${name} must be a single line of printable ASCII characters.`);
+    throw new ConfigError(messages.config.token(name));
   }
   return token;
 }
@@ -46,14 +48,14 @@ function readBaseUrl(env: Env, name: string, fallback: string): string {
   try {
     url = new URL(raw);
   } catch {
-    throw new ConfigError(`${name} must be an absolute URL.`);
+    throw new ConfigError(messages.config.absoluteUrl(name));
   }
   const isLocal = LOCAL_HOSTS.has(url.hostname);
   if (url.protocol !== "https:" && !(url.protocol === "http:" && isLocal)) {
-    throw new ConfigError(`${name} must use https. Plain http is allowed only for localhost.`);
+    throw new ConfigError(messages.config.https(name));
   }
   if (url.username || url.password || url.search || url.hash) {
-    throw new ConfigError(`${name} must not contain credentials, a query string or a fragment.`);
+    throw new ConfigError(messages.config.urlParts(name));
   }
   return url.href.replace(/\/+$/, "");
 }
@@ -63,7 +65,7 @@ function readInteger(env: Env, name: string, fallback: number, min: number, max:
   if (raw === undefined) return fallback;
   const value = Number(raw);
   if (!Number.isInteger(value) || value < min || value > max) {
-    throw new ConfigError(`${name} must be an integer between ${min} and ${max}.`);
+    throw new ConfigError(messages.config.integer(name, min, max));
   }
   return value;
 }
@@ -71,7 +73,7 @@ function readInteger(env: Env, name: string, fallback: number, min: number, max:
 function readLocale(env: Env): string | undefined {
   const locale = read(env, "LOLZTEAM_LOCALE");
   if (locale !== undefined && !/^[a-z]{2}(-[a-z]{2})?$/i.test(locale)) {
-    throw new ConfigError("LOLZTEAM_LOCALE must look like en, ru or en-US.");
+    throw new ConfigError(messages.config.locale);
   }
   return locale;
 }

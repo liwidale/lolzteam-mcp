@@ -1,5 +1,6 @@
 import { invalidInput } from "../errors.ts";
 import type { Query } from "../http/query.ts";
+import { messages } from "../i18n/index.ts";
 import { marketCatalog } from "../endpoints/market.generated.ts";
 import { buildRequest, findParam, type ParamValue } from "../endpoints/request.ts";
 import type { Endpoint } from "../endpoints/types.ts";
@@ -37,7 +38,7 @@ export const CATEGORY_NAMES = Object.keys(CATEGORIES) as [string, ...string[]];
 
 export function getCategory(name: string): Endpoint {
   const category = CATEGORIES[name];
-  if (!category) throw invalidInput(`Unknown Market category "${name}".`);
+  if (!category) throw invalidInput(messages.validation.unknownCategory(name));
   return category;
 }
 
@@ -65,12 +66,8 @@ export function buildFilterQuery(
   for (const key of Object.keys(filters)) {
     const typed = RESERVED_FILTERS[findParam(category, key)?.name ?? key];
     if (typed !== undefined) {
-      throw invalidInput(`Use the ${typed} parameter instead of the "${key}" filter.`);
+      throw invalidInput(messages.validation.reservedFilter(typed, key));
     }
   }
-  return buildRequest(
-    category,
-    filters,
-    `It is not a filter of category "${categoryName}". Call market_get_category_filters to see the supported filters.`,
-  ).query;
+  return buildRequest(category, filters, messages.validation.unknownFilterHint(categoryName)).query;
 }

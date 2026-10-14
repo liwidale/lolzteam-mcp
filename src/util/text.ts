@@ -1,3 +1,4 @@
+import { messages } from "../i18n/index.ts";
 import { isRecord } from "./json.ts";
 
 const INVISIBLE_RANGES: readonly (readonly [number, number])[] = [
@@ -62,7 +63,7 @@ export function stripMarkup(value: unknown): string | undefined {
 export function excerpt(text: string | undefined, maxLength: number): string | undefined {
   if (text === undefined || text.length <= maxLength) return text;
   const rest = text.length - maxLength;
-  return `${text.slice(0, maxLength).trimEnd()} [truncated, ${rest} more characters]`;
+  return `${text.slice(0, maxLength).trimEnd()} ${messages.output.truncated(rest)}`;
 }
 
 export function isoDate(value: unknown): string | undefined {

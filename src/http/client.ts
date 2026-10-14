@@ -1,5 +1,6 @@
 import { LolzteamError, type ErrorCode } from "../errors.ts";
 import { VERSION } from "../version.ts";
+import { messages } from "../i18n/index.ts";
 import { buildQuery, type Query } from "./query.ts";
 import { RateLimiter, type RateLimit } from "./rate-limiter.ts";
 
@@ -32,15 +33,12 @@ export interface ApiRequest {
 const MAX_RESPONSE_BYTES = 8 * 1024 * 1024;
 const RETRYABLE_STATUSES = new Set([500, 502, 503, 504]);
 
-const STATUS_ERRORS: Record<number, { code: ErrorCode; message: string }> = {
-  400: { code: "bad_request", message: "The API rejected the request parameters." },
-  401: { code: "unauthorized", message: "The API token is missing, invalid or expired." },
-  403: {
-    code: "forbidden",
-    message: "The token does not have permission for this action or lacks a required scope.",
-  },
-  404: { code: "not_found", message: "The requested resource was not found." },
-  422: { code: "bad_request", message: "The API rejected the request parameters." },
+const STATUS_ERRORS: Record<number, { code: ErrorCode; message: () => string }> = {
+  400: { code: "bad_request", message: () => messages.errors.badRequest },
+  401: { code: "unauthorized", message: () => messages.errors.unauthorized },
+  403: { code: "forbidden", message: () => messages.errors.forbidden },
+  404: { code: "not_found", message: () => messages.errors.notFound },
+  422: { code: "bad_request", message: () => messages.errors.badRequest },
 };
 
 function defaultSleep(ms: number): Promise<void> {
@@ -81,7 +79,7 @@ export class ApiClient {
     if (token === undefined) {
       throw new LolzteamError(
         "not_configured",
-        `No ${service} API token is configured. Set ${tokenVariable} or LOLZTEAM_TOKEN in the MCP server environment.`,
+        messages.errors.notConfigured(service, tokenVariable),
       );
     }
     const method = request.method ?? "GET";
@@ -120,11 +118,11 @@ export class ApiClient {
           await this.#sleep(delay);
           continue;
         }
-        throw new LolzteamError(
-          "rate_limited",
-          `The ${service} API rate limit was reached. Try again later.`,
-          { status: 429, endpoint, retryAfterSeconds: Math.max(1, Math.ceil(delay / 1000)) },
-        );
+        throw new LolzteamError("rate_limited", messages.errors.rateLimited(service), {
+          status: 429,
+          endpoint,
+          retryAfterSeconds: Math.max(1, Math.ceil(delay / 1000)),
+        });
       }
 
       if (RETRYABLE_STATUSES.has(response.status) && attempt < maxRetries) {
@@ -165,7 +163,7 @@ export class ApiClient {
       if (wait > this.#options.maxRateLimitWaitMs) {
         throw new LolzteamError(
           "rate_limited",
-          `The local ${this.#options.service} rate limit is exhausted. Try again later.`,
+          messages.errors.localRateLimit(this.#options.service),
           { endpoint, retryAfterSeconds: Math.max(1, Math.ceil(wait / 1000)) },
         );
       }
@@ -200,34 +198,32 @@ export class ApiClient {
     external: AbortSignal | undefined,
   ): LolzteamError {
     if (external?.aborted) {
-      return new LolzteamError("cancelled", "The request was cancelled.", { endpoint });
+      return new LolzteamError("cancelled", messages.errors.cancelled, { endpoint });
     }
     const name = error instanceof Error ? error.name : "";
     if (name === "TimeoutError" || name === "AbortError") {
       return new LolzteamError(
         "timeout",
-        `The ${this.#options.service} API did not respond within ${this.#options.timeoutMs} ms.`,
+        messages.errors.timeout(this.#options.service, this.#options.timeoutMs),
         { endpoint },
       );
     }
-    return new LolzteamError(
-      "network_error",
-      `Could not reach the ${this.#options.service} API. Check the network connection and the base URL.`,
-      { endpoint },
-    );
+    return new LolzteamError("network_error", messages.errors.network(this.#options.service), {
+      endpoint,
+    });
   }
 
   async #parse(response: Response, endpoint: string): Promise<JsonObject> {
     const declaredLength = Number(response.headers.get("content-length"));
     if (declaredLength > MAX_RESPONSE_BYTES) {
-      throw new LolzteamError("invalid_response", "The API response is too large to process.", {
+      throw new LolzteamError("invalid_response", messages.errors.tooLarge, {
         status: response.status,
         endpoint,
       });
     }
     const text = await response.text();
     if (text.length > MAX_RESPONSE_BYTES) {
-      throw new LolzteamError("invalid_response", "The API response is too large to process.", {
+      throw new LolzteamError("invalid_response", messages.errors.tooLarge, {
         status: response.status,
         endpoint,
       });
@@ -244,12 +240,11 @@ export class ApiClient {
       const known = STATUS_ERRORS[response.status];
       const code: ErrorCode = known?.code ?? "upstream_unavailable";
       const message =
-        known?.message ??
-        `The ${this.#options.service} API returned HTTP ${response.status}. Try again later.`;
+        known?.message() ?? messages.errors.upstream(this.#options.service, response.status);
       throw new LolzteamError(code, message, { status: response.status, endpoint, apiMessages });
     }
     if (!isJsonObject(payload)) {
-      throw new LolzteamError("invalid_response", "The API returned a response that is not JSON.", {
+      throw new LolzteamError("invalid_response", messages.errors.notJson, {
         status: response.status,
         endpoint,
       });
@@ -258,7 +253,7 @@ export class ApiClient {
       apiMessages &&
       Object.keys(payload).every((key) => key === "errors" || key === "system_info")
     ) {
-      throw new LolzteamError("bad_request", "The API returned an error.", {
+      throw new LolzteamError("bad_request", messages.errors.apiError, {
         status: response.status,
         endpoint,
         apiMessages,
