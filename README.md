@@ -32,16 +32,161 @@ An AI assistant cannot read LOLZTEAM or LZT Market on its own: the content sits 
 
 ## Installation
 
-You need Node.js 22.18 or newer and Git.
+Installation takes three steps: install Node.js, get an API token and run one setup command. The setup command checks the token and adds the server to your AI clients.
+
+### 1. Install Node.js
+
+LOLZTEAM MCP runs on Node.js 22.18 or newer. Check the version you have:
+
+```bash
+node --version
+```
+
+If the command is not found or prints a version below `v22.18.0`:
+
+- **Windows and macOS.** Download the LTS installer from [nodejs.org](https://nodejs.org/) and run it.
+- **Linux.** Install Node.js 22 or 24 from your distribution's packages or with a version manager such as [nvm](https://github.com/nvm-sh/nvm).
+
+Open a new terminal window after installing, so the `node` and `npx` commands are found.
+
+### 2. Get an API token
+
+1. Sign in to LOLZTEAM and create an API client at [lolz.live/account/api/client-add](https://lolz.live/account/api/client-add).
+2. Get an access token at [lolz.live/account/api/get-token](https://lolz.live/account/api/get-token) and select these scopes:
+
+| Scope    | Needed for                                                                                                                            |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `read`   | All forum reading tools.                                                                                                              |
+| `basic`  | `forum_get_user`.                                                                                                                     |
+| `post`   | `forum_search`. The official API documents its search endpoints as requiring this scope. The server uses it only for search requests. |
+| `market` | All `market_*` tools.                                                                                                                 |
+
+Market API access also requires 200 sympathies on the forum or a paid Market API subscription. Without it the Market tools return a `forbidden` error, while the forum tools keep working.
+
+Keep the token private. Anyone who has it can use the API on behalf of your account.
+
+### 3. Run the setup
+
+```bash
+npx -y lolzteam-mcp setup
+```
+
+The command downloads the latest version and then:
+
+1. Asks for the token. The input stays hidden.
+2. Checks the token against both APIs and shows the account it belongs to. A rejected token stops the setup before anything changes.
+3. Finds the installed MCP clients: Claude Desktop, Cursor and Windsurf.
+4. Asks which of them to configure. Press `Enter` to configure all of them.
+5. Adds the `lolzteam` server to each configuration file. Other servers and settings stay as they are, and the previous file is saved next to it with a `.bak` extension.
+6. Prints the command for Claude Code.
+
+A typical run looks like this:
+
+```text
+LOLZTEAM MCP 1.0.0 setup
+Create an API client at https://lolz.live/account/api/client-add, then get a token at https://lolz.live/account/api/get-token with the read, basic, post and market scopes.
+API token (input is hidden):
+Checking the token...
+Forum API: signed in as your_name.
+Market API: available.
+Found these MCP clients:
+  1. Claude Desktop (C:\Users\you\AppData\Roaming\Claude\claude_desktop_config.json)
+  2. Cursor (C:\Users\you\.cursor\mcp.json)
+Clients to configure, as numbers separated by commas. Press Enter for all:
+Claude Desktop: added the lolzteam server to C:\Users\you\AppData\Roaming\Claude\claude_desktop_config.json
+Cursor: added the lolzteam server to C:\Users\you\.cursor\mcp.json
+
+Claude Code: run this command with your token in place of <token>:
+  claude mcp add --transport stdio --scope user --env LOLZTEAM_TOKEN=<token> lolzteam -- cmd /c npx -y lolzteam-mcp@latest
+
+Restart the configured clients. The lolzteam server and its tools appear after the restart.
+```
+
+Restart the configured clients. The 24 tools appear under the `lolzteam` server.
+
+The setup speaks the language of your system. Run it with `LOLZTEAM_LOCALE=en` or `LOLZTEAM_LOCALE=ru` to choose. The chosen language is also saved for the server.
+
+#### Setup options
+
+| Option           | Effect                                                                                                                                                                               |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `--yes`          | Configures every detected client without asking.                                                                                                                                     |
+| `--client <id>`  | Configures only this client: `claude-desktop`, `cursor` or `windsurf`. Repeat it for several clients. Use it when a client has never been started and its folder does not exist yet. |
+| `LOLZTEAM_TOKEN` | Environment variable with the token. The setup uses it instead of asking, which lets it run in scripts.                                                                              |
+
+For example, to configure only Cursor without questions on macOS or Linux:
+
+```bash
+LOLZTEAM_TOKEN=your-token npx -y lolzteam-mcp setup --yes --client cursor
+```
+
+### Claude Code
+
+Claude Code keeps its own list of servers. Add the server with one command and put your token in place of `your-token`.
+
+macOS and Linux:
+
+```bash
+claude mcp add --transport stdio --scope user --env LOLZTEAM_TOKEN=your-token lolzteam -- npx -y lolzteam-mcp@latest
+```
+
+Windows:
+
+```bash
+claude mcp add --transport stdio --scope user --env LOLZTEAM_TOKEN=your-token lolzteam -- cmd /c npx -y lolzteam-mcp@latest
+```
+
+Run `claude mcp list` to check that `lolzteam` is connected.
+
+### Other clients and manual setup
+
+Any MCP client that starts servers over stdio works. Add this entry to its configuration file. On Windows, replace `"command": "npx"` and its arguments with `"command": "cmd"` and `"args": ["/c", "npx", "-y", "lolzteam-mcp@latest"]`.
+
+```json
+{
+  "mcpServers": {
+    "lolzteam": {
+      "command": "npx",
+      "args": ["-y", "lolzteam-mcp@latest"],
+      "env": {
+        "LOLZTEAM_TOKEN": "your-token"
+      }
+    }
+  }
+}
+```
+
+The configuration files the setup edits:
+
+| Client         | Windows                                           | macOS                                                             | Linux                                         |
+| -------------- | ------------------------------------------------- | ----------------------------------------------------------------- | --------------------------------------------- |
+| Claude Desktop | `%APPDATA%\Claude\claude_desktop_config.json`     | `~/Library/Application Support/Claude/claude_desktop_config.json` | `~/.config/Claude/claude_desktop_config.json` |
+| Cursor         | `%USERPROFILE%\.cursor\mcp.json`                  | `~/.cursor/mcp.json`                                              | `~/.cursor/mcp.json`                          |
+| Windsurf       | `%USERPROFILE%\.codeium\windsurf\mcp_config.json` | `~/.codeium/windsurf/mcp_config.json`                             | `~/.codeium/windsurf/mcp_config.json`         |
+
+### Updating
+
+The configuration runs `npx -y lolzteam-mcp@latest`, so npm fetches the newest published version when a client starts the server. Restart the client to pick up a new release. Run the setup again only to change the token or add another client.
+
+### Install from source
+
+Use this to run your own changes or a version that is not published yet. You need Git in addition to Node.js.
 
 ```bash
 git clone https://github.com/liwidale/lolzteam-mcp.git
 cd lolzteam-mcp
 npm ci
 npm run build
+node dist/index.js setup
 ```
 
-The server is now at `dist/index.js`. It talks to your AI client over standard input and output, so you do not start it yourself: the client launches it.
+When the setup runs from a cloned folder, it writes the full path to `node` and to `dist/index.js` into the client configuration instead of `npx`. Pull new commits and run `npm ci` and `npm run build` to update.
+
+### Uninstalling
+
+1. Remove the `lolzteam` entry from each client configuration file, or restore the `.bak` file the setup saved. For Claude Code, run `claude mcp remove lolzteam --scope user`.
+2. Restart the clients.
+3. Revoke the token at [lolz.live/account/api](https://lolz.live/account/api) if you no longer need it.
 
 ## What you get
 
@@ -57,53 +202,13 @@ The server is now at `dist/index.js`. It talks to your AI client over standard i
 
 ## Getting started
 
-### 1. Get a token
-
-1. Sign in to LOLZTEAM and create an API client at [lolz.live/account/api/client-add](https://lolz.live/account/api/client-add).
-2. Get an access token at [lolz.live/account/api/get-token](https://lolz.live/account/api/get-token) and select these scopes:
-
-| Scope    | Needed for                                                                                                                            |
-| -------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `read`   | All forum reading tools.                                                                                                              |
-| `basic`  | `forum_get_user`.                                                                                                                     |
-| `post`   | `forum_search`. The official API documents its search endpoints as requiring this scope. The server uses it only for search requests. |
-| `market` | All `market_*` tools.                                                                                                                 |
-
-Market API access also requires 200 sympathies on the forum or a paid Market API subscription. Without it the Market tools return a `forbidden` error, while the forum tools keep working.
-
-### 2. Connect your AI client
-
-Replace `/path/to/lolzteam-mcp` with the folder you cloned and `your-token` with the token from step 1. On Windows, use a path such as `C:\\Users\\you\\lolzteam-mcp\\dist\\index.js` in JSON files.
-
-**Claude Code**
-
-```bash
-claude mcp add --transport stdio --env LOLZTEAM_TOKEN=your-token lolzteam -- node /path/to/lolzteam-mcp/dist/index.js
-```
-
-**Claude Desktop** (`claude_desktop_config.json`), **Cursor** (`.cursor/mcp.json`) and other clients with the same format:
-
-```json
-{
-  "mcpServers": {
-    "lolzteam": {
-      "command": "node",
-      "args": ["/path/to/lolzteam-mcp/dist/index.js"],
-      "env": {
-        "LOLZTEAM_TOKEN": "your-token"
-      }
-    }
-  }
-}
-```
-
-Restart the client after editing its configuration. The 24 tools appear under the `lolzteam` server.
-
-### 3. Ask something
+After the setup and a client restart, ask the assistant something that needs the forum or the Market:
 
 - "What does the LOLZTEAM forum say about Steam Guard recovery? Summarize the three most discussed threads."
 - "Find the cheapest Steam accounts with CS2 Prime and no VAC ban under 500 rubles. Check the sellers' feedback."
 - "Who is the user `example`, and what have they posted recently?"
+
+The assistant picks the tools on its own. Most clients show each tool call and ask for permission the first time, so you can see which requests go to the API.
 
 ## Usage
 
@@ -264,11 +369,17 @@ Follow the LOLZTEAM rules and the API terms when you use the data the server ret
 
 ## Troubleshooting
 
-**The tools do not appear in the client.** Check that the path to `dist/index.js` is absolute and that `npm run build` finished. Run `node /path/to/lolzteam-mcp/dist/index.js` in a terminal: the server prints `lolzteam-mcp 1.0.0 is running on stdio` to standard error and waits for input. Press `Ctrl+C` to stop it.
+**`npx` or `node` is not recognized.** Node.js is not installed, or the terminal was opened before the installation. Install Node.js as described in [Installation](#installation) and open a new terminal.
 
-**Every call returns `not_configured`.** The client does not pass `LOLZTEAM_TOKEN` to the server. Put it in the `env` block of the server configuration, not in your shell profile.
+**The setup does not find a client.** A client creates its configuration folder on its first start. Start the client once and run the setup again, or name it with `--client`, for example `--client cursor`.
 
-**`unauthorized`.** The token is invalid or expired. Create a new one.
+**The setup reports that a file is not valid JSON.** The client configuration file contains a syntax error, and the setup does not touch it. Fix the file or move it away and run the setup again.
+
+**The tools do not appear in the client.** Restart the client completely, including its tray icon. Then run `npx -y lolzteam-mcp@latest --version` in a terminal: it prints the version when Node.js and npm work. For a source install, check that the paths in the configuration are absolute and that `npm run build` finished.
+
+**Every call returns `not_configured`.** The client does not pass `LOLZTEAM_TOKEN` to the server. Run the setup again, or put the token in the `env` block of the server configuration, not in your shell profile.
+
+**`unauthorized`.** The token is invalid or expired. Create a new one and run the setup again.
 
 **`forbidden` from `forum_search`.** The token lacks the `post` scope. Other forum tools work without it.
 
@@ -276,7 +387,7 @@ Follow the LOLZTEAM rules and the API terms when you use the data the server ret
 
 **`rate_limited`.** Wait for `retry_after_seconds`. If it happens often, reduce how many searches you ask for in a row.
 
-**Check a token from the terminal.** With a built project, run:
+**Check a token from the terminal.** In a source install, run:
 
 ```bash
 LOLZTEAM_TOKEN=your-token npm run smoke
@@ -336,7 +447,7 @@ The official OpenAPI documents published with the API documentation were the ref
 
 ```text
 src/
-  index.ts                  Entry point: configuration, stdio transport, shutdown
+  index.ts                  Entry point: command line, server start, shutdown
   server.ts                 MCP server, instructions and API clients
   config.ts                 Environment variables and validation
   tool.ts                   Tool registration, results and error format
@@ -345,6 +456,7 @@ src/
   i18n/                     User-facing texts: English source and Russian translation
   forum/                    Forum tools and response formatting
   market/                   Market tools, formatting and category filters
+  setup/                    Setup command: token check, client detection, configuration files
   util/                     JSON access, text cleanup and response sanitizing
 openapi/                    Official OpenAPI documents of both APIs
 scripts/
