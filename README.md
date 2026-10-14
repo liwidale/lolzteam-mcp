@@ -258,7 +258,7 @@ When the setup runs from a cloned folder, it writes the full path to `node` and 
 - **Context-friendly output.** Every tool returns compact JSON without permission flags or HTML duplicates. Long texts are cut at a limit you control and marked as truncated.
 - **Links back to the source.** Threads, posts, users and listings include their URL on the site whenever the API provides one.
 - **Every read-only endpoint, kept current.** Three universal tools reach all 113 read-only endpoints of both APIs, including the ones without a dedicated tool. A daily workflow pulls the official OpenAPI documents and opens a pull request when the API changes.
-- **Read-only by design.** The server never posts, edits, buys, sells or changes settings. No tool can.
+- **Read-only by design.** The server never posts, edits, buys, sells or changes settings. No tool can, which also keeps you within the forum rule against messages written by an LLM.
 - **Predictable errors.** Failures come back as a structured error with a code, the API message, a hint and, for rate limits, how long to wait.
 
 ## Getting started
@@ -427,6 +427,9 @@ The Market documentation also mentions a stricter limit of 20 category searches 
 - **No third-party code at runtime.** The package has no dependencies, so installing it adds only its own code. The MCP protocol, input validation and the HTTP client are part of the project and are covered by tests that run against the official MCP SDK client.
 - **Local only.** The server uses the stdio transport and opens no network port. It sends nothing anywhere except the two configured APIs. There is no telemetry.
 
+> [!WARNING]
+> **Do not let the assistant write on the forum.** Rule 2.1 of the [LOLZTEAM rules](https://lolz.team/rules/) forbids using any LLM, such as GPT, to write forum messages for you, automatically or by hand. Partial use for writing articles is allowed. This is why the server only reads. A modified version that posts messages or uses the write parameters of the API, such as the `post` scope for anything other than search, can get your account blocked.
+
 Follow the LOLZTEAM rules and the API terms when you use the data the server returns.
 
 ## Troubleshooting
@@ -532,7 +535,7 @@ test/                       Unit and integration tests
 
 ## Contributing
 
-Issues and pull requests are welcome. Keep the server read-only, put every user-facing text into `src/i18n/en.ts` and its translations, base every parameter on the official API documentation, add tests for new behavior and run `npm test`, `npm run lint` and `npm run typecheck` before you open a pull request.
+Issues and pull requests are welcome. Changes that let the server post, edit or buy are not accepted, because the forum rules forbid messages written by an LLM. Keep the server read-only, put every user-facing text into `src/i18n/en.ts` and its translations, base every parameter on the official API documentation, add tests for new behavior and run `npm test`, `npm run lint` and `npm run typecheck` before you open a pull request.
 
 ## License
 
