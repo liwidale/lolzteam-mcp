@@ -90,7 +90,7 @@ export function registerMarketTools(server: McpServer, market: ApiClient): void 
         .record(z.string().min(1).max(100), filterValue)
         .optional()
         .describe(
-          'Category-specific filters by their API name, for example {"game[]": [730], "vac": false} for steam. Array filters accept a list, range filters accept numbers.',
+          'Category-specific filters by their API name, for example {"game[]": [730], "no_vac": true, "mafile": "yes"} for steam. Array filters accept a list, range filters accept numbers.',
         ),
       cursor: z
         .string()
@@ -128,18 +128,21 @@ export function registerMarketTools(server: McpServer, market: ApiClient): void 
         },
         signal,
       });
-      return compact({
-        category: args.category,
-        total_items: num(response, "totalItems"),
-        page: num(response, "page"),
-        per_page: num(response, "perPage"),
-        has_next_page: bool(response, "hasNextPage"),
-        next_cursor: str(response, "nextCursor"),
-        search_url: str(response, "searchUrl"),
-        items: records(response.items).map((item) =>
-          formatItemSummary(item, args.description_length),
-        ),
-      });
+      return compact(
+        {
+          category: args.category,
+          total_items: num(response, "totalItems"),
+          page: num(response, "page"),
+          per_page: num(response, "perPage"),
+          has_next_page: bool(response, "hasNextPage"),
+          next_cursor: str(response, "nextCursor"),
+          search_url: str(response, "searchUrl"),
+          items: records(response.items).map((item) =>
+            formatItemSummary(item, args.description_length),
+          ),
+        },
+        ["items"],
+      );
     },
   });
 
@@ -295,20 +298,25 @@ export function registerMarketTools(server: McpServer, market: ApiClient): void 
       });
       const counts = asRecord(response.counts);
       const pagination = asRecord(response.pagination);
-      return compact({
-        counts: compact({
-          total: num(counts, "total"),
-          positive: num(counts, "positive"),
-          negative: num(counts, "negative"),
-          positive_percentage: num(counts, "positive_percentage"),
-        }),
-        pagination: compact({
-          page: num(pagination, "current_page"),
-          pages: num(pagination, "last_page"),
-          total: num(pagination, "total"),
-        }),
-        feedback: records(response.feedbacks).map((item) => formatFeedback(item, args.text_length)),
-      });
+      return compact(
+        {
+          counts: compact({
+            total: num(counts, "total"),
+            positive: num(counts, "positive"),
+            negative: num(counts, "negative"),
+            positive_percentage: num(counts, "positive_percentage"),
+          }),
+          pagination: compact({
+            page: num(pagination, "current_page"),
+            pages: num(pagination, "last_page"),
+            total: num(pagination, "total"),
+          }),
+          feedback: records(response.feedbacks).map((item) =>
+            formatFeedback(item, args.text_length),
+          ),
+        },
+        ["feedback"],
+      );
     },
   });
 
@@ -344,16 +352,19 @@ export function registerMarketTools(server: McpServer, market: ApiClient): void 
           }),
         )
         .sort((a, b) => (b.price ?? 0) * (b.count ?? 1) - (a.price ?? 0) * (a.count ?? 1));
-      return compact({
-        app_id: num(data, "appId"),
-        app_title: cleanText(data.appTitle),
-        total_value: num(data, "totalValue"),
-        currency: str(data, "currency"),
-        item_count: num(data, "itemCount"),
-        marketable_item_count: num(data, "marketableItemCount"),
-        checked_at: isoDate(data.time),
-        top_items: items.slice(0, 15),
-      });
+      return compact(
+        {
+          app_id: num(data, "appId"),
+          app_title: cleanText(data.appTitle),
+          total_value: num(data, "totalValue"),
+          currency: str(data, "currency"),
+          item_count: num(data, "itemCount"),
+          marketable_item_count: num(data, "marketableItemCount"),
+          checked_at: isoDate(data.time),
+          top_items: items.slice(0, 15),
+        },
+        ["top_items"],
+      );
     },
   });
 
@@ -374,11 +385,14 @@ export function registerMarketTools(server: McpServer, market: ApiClient): void 
           symbol: cleanText(currency.symbol),
         });
       });
-      return compact({
-        currencies,
-        visitor_currency: str(response, "visitorCurrency"),
-        updated_at: isoDate(response.lastUpdate),
-      });
+      return compact(
+        {
+          currencies,
+          visitor_currency: str(response, "visitorCurrency"),
+          updated_at: isoDate(response.lastUpdate),
+        },
+        ["currencies"],
+      );
     },
   });
 }

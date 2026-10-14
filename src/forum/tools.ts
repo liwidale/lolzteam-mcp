@@ -91,11 +91,14 @@ export function registerForumTools(server: McpServer, forum: ApiClient): void {
         }),
         signal,
       });
-      return compact({
-        results: records(response.data).map((item) => formatContent(item, args.text_length)),
-        users: records(response.users).map(formatUser),
-        pagination: formatPagination(response, "data_total"),
-      });
+      return compact(
+        {
+          results: records(response.data).map((item) => formatContent(item, args.text_length)),
+          users: records(response.users).map(formatUser),
+          pagination: formatPagination(response, "data_total"),
+        },
+        ["results"],
+      );
     },
   });
 
@@ -230,14 +233,19 @@ export function registerForumTools(server: McpServer, forum: ApiClient): void {
         signal,
       });
       const section = asRecord(response.forum);
-      return compact({
-        forum: compact({
-          forum_id: num(section, "forum_id"),
-          title: cleanText(section.forum_title),
-        }),
-        threads: records(response.threads).map((thread) => formatThread(thread, args.text_length)),
-        pagination: formatPagination(response, "threads_total"),
-      });
+      return compact(
+        {
+          forum: compact({
+            forum_id: num(section, "forum_id"),
+            title: cleanText(section.forum_title),
+          }),
+          threads: records(response.threads).map((thread) =>
+            formatThread(thread, args.text_length),
+          ),
+          pagination: formatPagination(response, "threads_total"),
+        },
+        ["threads"],
+      );
     },
   });
 
@@ -298,11 +306,14 @@ export function registerForumTools(server: McpServer, forum: ApiClient): void {
         },
         signal,
       });
-      return compact({
-        thread: formatThread(response.thread, 300),
-        posts: records(response.posts).map((post) => formatPost(post, args.text_length)),
-        pagination: formatPagination(response, "posts_total"),
-      });
+      return compact(
+        {
+          thread: formatThread(response.thread, 300),
+          posts: records(response.posts).map((post) => formatPost(post, args.text_length)),
+          pagination: formatPagination(response, "posts_total"),
+        },
+        ["posts"],
+      );
     },
   });
 
@@ -348,10 +359,13 @@ export function registerForumTools(server: McpServer, forum: ApiClient): void {
       const ids = comments
         .map((comment) => comment.comment_id)
         .filter((value): value is number => value !== undefined);
-      return compact({
-        comments,
-        oldest_comment_id: ids.length > 0 ? Math.min(...ids) : undefined,
-      });
+      return compact(
+        {
+          comments,
+          oldest_comment_id: ids.length > 0 ? Math.min(...ids) : undefined,
+        },
+        ["comments"],
+      );
     },
   });
 
@@ -407,11 +421,14 @@ export function registerForumTools(server: McpServer, forum: ApiClient): void {
         query: { page: args.page, limit: args.limit },
         signal,
       });
-      return compact({
-        user: formatUser(response.user),
-        items: records(response.data).map((item) => formatContent(item, args.text_length)),
-        pagination: formatPagination(response, "data_total"),
-      });
+      return compact(
+        {
+          user: formatUser(response.user),
+          items: records(response.data).map((item) => formatContent(item, args.text_length)),
+          pagination: formatPagination(response, "data_total"),
+        },
+        ["items"],
+      );
     },
   });
 
@@ -463,16 +480,19 @@ export function registerForumTools(server: McpServer, forum: ApiClient): void {
         signal,
       });
       const tag = asRecord(response.tag);
-      return compact({
-        tag: compact({
-          tag_id: num(tag, "tag_id"),
-          text: cleanText(tag.tag_text),
-          uses: num(tag, "tag_use_count"),
-          url: str(asRecord(tag.links), "permalink"),
-        }),
-        threads: records(response.tagged).map((thread) => formatThread(thread, args.text_length)),
-        pagination: formatPagination(response, "tagged_total"),
-      });
+      return compact(
+        {
+          tag: compact({
+            tag_id: num(tag, "tag_id"),
+            text: cleanText(tag.tag_text),
+            uses: num(tag, "tag_use_count"),
+            url: str(asRecord(tag.links), "permalink"),
+          }),
+          threads: records(response.tagged).map((thread) => formatThread(thread, args.text_length)),
+          pagination: formatPagination(response, "tagged_total"),
+        },
+        ["threads"],
+      );
     },
   });
 }

@@ -82,8 +82,11 @@ function isEmpty(value: unknown): boolean {
   return isRecord(value) && Object.keys(value).length === 0;
 }
 
-export function compact<T extends Record<string, unknown>>(value: T): Partial<T> {
+export function compact<T extends Record<string, unknown>>(
+  value: T,
+  keep: readonly (keyof T)[] = [],
+): Partial<T> {
   return Object.fromEntries(
-    Object.entries(value).filter(([, item]) => !isEmpty(item)),
+    Object.entries(value).filter(([key, item]) => keep.includes(key) || !isEmpty(item)),
   ) as Partial<T>;
 }
