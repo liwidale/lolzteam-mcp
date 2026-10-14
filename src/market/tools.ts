@@ -12,7 +12,7 @@ import {
   getCategory,
   RESERVED_FILTERS,
 } from "./catalog.ts";
-import { formatFeedback, formatItemDetail, formatItemSummary, itemUrl } from "./format.ts";
+import { formatFeedback, formatItem, itemUrl, webUrl } from "./format.ts";
 
 export const MARKET_RATE_LIMITS = {
   search: { limit: 120, windowMs: 60_000 },
@@ -106,6 +106,12 @@ export function registerMarketTools(server: McpServer, market: ApiClient): void 
         .max(2_000)
         .default(200)
         .describe("Maximum characters of each listing description. 0 hides descriptions."),
+      include_attributes: z
+        .boolean()
+        .default(false)
+        .describe(
+          "Also return the non-empty category-specific attributes of each listing, such as Steam level, games or bans. Makes the result much larger.",
+        ),
     },
     handler: async (args, { signal }) => {
       const category = getCategory(args.category);
@@ -136,9 +142,12 @@ export function registerMarketTools(server: McpServer, market: ApiClient): void 
           per_page: num(response, "perPage"),
           has_next_page: bool(response, "hasNextPage"),
           next_cursor: str(response, "nextCursor"),
-          search_url: str(response, "searchUrl"),
+          search_url: webUrl(str(response, "searchUrl")),
           items: records(response.items).map((item) =>
-            formatItemSummary(item, args.description_length),
+            formatItem(item, {
+              descriptionLength: args.description_length,
+              attributes: args.include_attributes ? "non_empty" : "none",
+            }),
           ),
         },
         ["items"],
@@ -167,7 +176,10 @@ export function registerMarketTools(server: McpServer, market: ApiClient): void 
     handler: async (args, { signal }) => {
       const response = await market.request({ path: `/${args.item_id}`, bucket: "search", signal });
       return compact({
-        item: formatItemDetail(response.item, args.description_length),
+        item: formatItem(response.item, {
+          descriptionLength: args.description_length,
+          attributes: "all",
+        }),
         url: str(response, "itemLink") ?? itemUrl(args.item_id),
         favorites: num(response, "faveCount"),
         same_items: num(response, "sameItemsCount"),
@@ -186,7 +198,7 @@ export function registerMarketTools(server: McpServer, market: ApiClient): void 
     handler: async (_args, { signal }) => {
       const response = await market.request({ path: "/category", bucket: "get", signal });
       return {
-        categories: records(response.category).map((category) =>
+        categories: records(response.categories ?? response.category).map((category) =>
           compact({
             category_id: num(category, "category_id"),
             name: str(category, "category_name"),
@@ -196,6 +208,7 @@ export function registerMarketTools(server: McpServer, market: ApiClient): void 
                 stripMarkup(category.category_description),
               300,
             ),
+            has_guarantee: num(category, "has_guarantee") === 1 ? true : undefined,
           }),
         ),
         search_categories: CATEGORY_NAMES,
@@ -226,9 +239,19 @@ export function registerMarketTools(server: McpServer, market: ApiClient): void 
     name: "market_list_category_games",
     title: "List Market category games",
     description:
-      "Lists the games known to a Market category with the IDs used by game filters such as game[] in Steam. Not every category has games.",
+      "Finds games known to a Market category and returns the IDs used by game filters such as game[] in Steam. Steam alone has thousands of games, so pass a query. Not every category has games.",
     inputSchema: {
       category: z.enum(GAME_CATEGORIES).describe("Category to list games for."),
+      query: z
+        .string()
+        .trim()
+        .min(1)
+        .max(100)
+        .optional()
+        .describe(
+          "Part of the game title or abbreviation, in English or Russian, such as cs2 or rust.",
+        ),
+      limit: z.number().int().min(1).max(200).default(30).describe("Maximum games to return."),
     },
     handler: async (args, { signal }) => {
       const response = await market.request({
@@ -236,8 +259,17 @@ export function registerMarketTools(server: McpServer, market: ApiClient): void 
         bucket: "get",
         signal,
       });
+      const needle = args.query?.toLowerCase();
+      const matches = records(response.games).filter(
+        (game) =>
+          needle === undefined ||
+          ["title", "abbr", "ru", "url"].some((key) =>
+            str(game, key)?.toLowerCase().includes(needle),
+          ),
+      );
       return {
-        games: records(response.games).map((game) =>
+        total: matches.length,
+        games: matches.slice(0, args.limit).map((game) =>
           compact({
             id: str(game, "app_id") ?? num(game, "app_id"),
             title: cleanText(game.title),
@@ -349,6 +381,7 @@ export function registerMarketTools(server: McpServer, market: ApiClient): void 
             count: num(item, "count"),
             tradable: bool(item, "tradable"),
             marketable: bool(item, "marketable"),
+            type: cleanText(item.type),
           }),
         )
         .sort((a, b) => (b.price ?? 0) * (b.count ?? 1) - (a.price ?? 0) * (a.count ?? 1));

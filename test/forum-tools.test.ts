@@ -22,6 +22,17 @@ const thread = {
   discussion_open: true,
   view_url: "https://lolz.live/threads/101/",
   can_edit: false,
+  contest: {
+    type: "by_finish_date",
+    finish_date: 1_700_086_400,
+    now_count_members: 678,
+    is_finished: 0,
+    count_winners: 1,
+    prize_type: "money",
+    prize_data: 503,
+    prize_cost: 503,
+    permissions: { can_participate: false },
+  },
   first_post: {
     post_id: 900,
     message_html: "<b>ignored</b>",
@@ -55,6 +66,13 @@ const user = {
   hold: "10",
   user_email: "private@example.com",
   user_deposit: 5000,
+  user_followers: { count: 136, users: [{ user_id: 9, username: "fan" }] },
+  user_following: { count: 88, users: [] },
+  fields: [
+    { id: "telegram", title: "Telegram", value: "private_handle" },
+    { id: "scamURL", title: "SCAM", value: "https://lolz.live/threads/1/" },
+  ],
+  birthday: { age: 27, timeStamp: { date: "1999-07-24 00:00:00.000000" } },
   secret_answer_first_letter: "x",
   links: { permalink: "https://lolz.live/members/5/" },
 };
@@ -172,6 +190,14 @@ describe("forum tools", () => {
     );
     const result = await withPoll.call("forum_get_thread", { thread_id: 101, include_poll: true });
     assert.equal(result.data.thread.title, "Steam accounts guide");
+    assert.deepEqual(result.data.thread.contest, {
+      prize_type: "money",
+      prize: 503,
+      winners: 1,
+      members: 678,
+      finishes_at: "2023-11-15T22:13:20.000Z",
+      is_finished: false,
+    });
     assert.deepEqual(result.data.poll, {
       question: "Best game?",
       votes: 10,
@@ -255,7 +281,17 @@ describe("forum tools", () => {
     assert.equal(requests[0]?.url.pathname, "/users/me");
     assert.equal(result.data.user.username, "author");
     assert.equal(result.data.user.url, "https://lolz.live/members/5/");
-    for (const secret of ["1000.00", "private@example.com", "5000", "secret_answer"]) {
+    assert.equal(result.data.user.followers, 136);
+    assert.equal(result.data.user.following, 88);
+    assert.equal(result.data.user.deposit, 5000);
+    assert.equal(result.data.user.scam_report_url, "https://lolz.live/threads/1/");
+    for (const secret of [
+      "1000.00",
+      "private@example.com",
+      "private_handle",
+      "1999",
+      "secret_answer",
+    ]) {
       assert.doesNotMatch(result.text, new RegExp(secret));
     }
     await close();
@@ -322,10 +358,13 @@ describe("forum tools", () => {
           json({
             categories: [
               {
-                category_id: 2,
-                category_title: "Games",
-                category_description: "",
-                links: { permalink: "https://lolz.live/categories/2/" },
+                node_id: 2,
+                node_type_id: "Category",
+                title: "Игры",
+                title_en: "Games",
+                description: "",
+                parent_node_id: 0,
+                view_url: "https://lolz.live/#2",
               },
             ],
             categories_total: 1,
@@ -334,18 +373,23 @@ describe("forum tools", () => {
           json({
             forums: [
               {
-                forum_id: 8,
-                forum_title: "Steam",
-                forum_description: "<b>All</b> about Steam",
+                node_id: 8,
+                title: "Стим",
+                title_en: "Steam",
+                description: "<b>All</b> about Steam",
                 parent_node_id: 2,
-                forum_thread_count: 1000,
-                forum_prefixes: [
-                  {
-                    group_title: "Type",
-                    group_prefixes: [{ prefix_id: 3, prefix_title: "Guide" }],
-                  },
-                ],
-                links: { permalink: "https://lolz.live/forums/8/" },
+                type_data: {
+                  discussion_count: 1000,
+                  message_count: 25000,
+                  last_post_date: 1_700_000_000,
+                  prefixes: [
+                    {
+                      group_title: "Type",
+                      group_prefixes: [{ prefix_id: 3, prefix_title: "Guide" }],
+                    },
+                  ],
+                },
+                view_url: "https://lolz.live/forums/8/",
               },
             ],
             forums_total: 1,
@@ -356,14 +400,37 @@ describe("forum tools", () => {
     assert.equal(tagged.data.tag.uses, 99);
     assert.deepEqual(tagged.data.pagination, { page: 2, pages: 5, total: 99, next_page: 3 });
     const forums = await call("forum_list_forums");
-    assert.deepEqual(forums.data.forums[0].prefixes, [
-      { prefix_id: 3, title: "Guide", group: "Type" },
-    ]);
-    assert.equal(forums.data.forums[0].description, "All about Steam");
+    assert.deepEqual(forums.data.forums[0], {
+      forum_id: 8,
+      title: "Стим",
+      parent_node_id: 2,
+      threads: 1000,
+    });
+    const detailed = await call("forum_list_forums", { detailed: true, include_prefixes: true });
+    assert.deepEqual(detailed.data.forums[0], {
+      forum_id: 8,
+      title: "Стим",
+      parent_node_id: 2,
+      threads: 1000,
+      title_en: "Steam",
+      description: "All about Steam",
+      posts: 25000,
+      last_post_at: "2023-11-14T22:13:20.000Z",
+      prefixes: [{ prefix_id: 3, title: "Guide", group: "Type" }],
+      url: "https://lolz.live/forums/8/",
+    });
     const categories = await call("forum_list_categories", { parent_category_id: 1 });
     assert.equal(requests.at(-1)?.url.searchParams.get("parent_category_id"), "1");
     assert.deepEqual(categories.data, {
-      categories: [{ category_id: 2, title: "Games", url: "https://lolz.live/categories/2/" }],
+      categories: [
+        {
+          category_id: 2,
+          title: "Игры",
+          title_en: "Games",
+          parent_node_id: 0,
+          url: "https://lolz.live/#2",
+        },
+      ],
       total: 1,
     });
     await close();

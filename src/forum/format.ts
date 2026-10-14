@@ -13,6 +13,29 @@ function plainText(source: JsonRecord, prefix: string): string | undefined {
   );
 }
 
+function count(source: JsonRecord, key: string): number | undefined {
+  return num(source, key) ?? num(asRecord(source[key]), "count");
+}
+
+function translation(source: JsonRecord, key: string): string | undefined {
+  const original = cleanText(source[key]);
+  const translated = cleanText(source[`${key}_en`]);
+  return translated === original ? undefined : translated;
+}
+
+function formatContest(raw: unknown) {
+  const contest = asRecord(raw);
+  if (Object.keys(contest).length === 0) return undefined;
+  return compact({
+    prize_type: str(contest, "prize_type"),
+    prize: num(contest, "prize_cost") ?? num(contest, "prize_data"),
+    winners: num(contest, "count_winners"),
+    members: num(contest, "now_count_members"),
+    finishes_at: isoDate(contest.finish_date),
+    is_finished: bool(contest, "is_finished"),
+  });
+}
+
 function author(source: JsonRecord, idKey: string, nameKey: string) {
   return compact({ user_id: num(source, idKey), username: cleanText(source[nameKey]) });
 }
@@ -35,6 +58,7 @@ export function formatThread(raw: unknown, textLength: number) {
   return compact({
     thread_id: num(thread, "thread_id"),
     title: cleanText(thread.title),
+    title_en: translation(thread, "title"),
     forum: compact({ forum_id: num(thread, "node_id"), title: cleanText(thread.node_title) }),
     author: author(thread, "user_id", "username"),
     created_at: isoDate(thread.post_date),
@@ -48,6 +72,7 @@ export function formatThread(raw: unknown, textLength: number) {
     is_sticky: bool(thread, "sticky") === true ? true : undefined,
     is_closed: bool(thread, "discussion_open") === false ? true : undefined,
     first_post_id: num(thread, "first_post_id"),
+    contest: formatContest(thread.contest),
     url: str(thread, "view_url"),
     text: excerpt(plainText(firstPost, "message"), textLength),
   });
@@ -99,6 +124,7 @@ export function formatProfilePost(raw: unknown, textLength: number) {
 
 export function formatUser(raw: unknown) {
   const user = asRecord(raw);
+  const scamField = records(user.fields).find((field) => field.id === "scamURL");
   return compact({
     user_id: num(user, "user_id"),
     username: cleanText(user.username),
@@ -110,45 +136,64 @@ export function formatUser(raw: unknown) {
     likes2: num(user, "user_like2_count"),
     trophies: num(user, "trophy_count"),
     contests: num(user, "contest_count"),
-    followers: num(user, "user_followers"),
-    following: num(user, "user_following"),
+    followers: count(user, "user_followers"),
+    following: count(user, "user_following"),
+    deposit: num(user, "user_deposit"),
     is_banned: bool(user, "is_banned") === true ? true : undefined,
     is_verified: bool(user, "user_is_verified") === true ? true : undefined,
+    scam_report_url: scamField ? cleanText(scamField.value) : undefined,
     short_link: str(user, "short_link"),
     url: permalink(user),
   });
 }
 
-export function formatForum(raw: unknown) {
+export interface ForumFormat {
+  detailed: boolean;
+  prefixes: boolean;
+}
+
+export function formatForum(raw: unknown, format: ForumFormat) {
   const forum = asRecord(raw);
-  const prefixes = records(forum.forum_prefixes).flatMap((group) =>
-    records(group.group_prefixes).map((prefix) =>
-      compact({
-        prefix_id: num(prefix, "prefix_id"),
-        title: cleanText(prefix.prefix_title),
-        group: cleanText(group.group_title),
-      }),
-    ),
-  );
-  return compact({
-    forum_id: num(forum, "forum_id"),
-    title: cleanText(forum.forum_title),
-    description: excerpt(stripMarkup(forum.forum_description), 300),
+  const details = asRecord(forum.type_data);
+  const groups = forum.forum_prefixes ?? details.prefixes;
+  const prefixes = format.prefixes
+    ? records(groups).flatMap((group) =>
+        records(group.group_prefixes).map((prefix) =>
+          compact({
+            prefix_id: num(prefix, "prefix_id"),
+            title: cleanText(prefix.prefix_title),
+            group: cleanText(group.group_title),
+          }),
+        ),
+      )
+    : undefined;
+  const summary = {
+    forum_id: num(forum, "forum_id") ?? num(forum, "node_id"),
+    title: cleanText(forum.forum_title) ?? cleanText(forum.title),
     parent_node_id: num(forum, "parent_node_id"),
-    threads: num(forum, "forum_thread_count"),
-    posts: num(forum, "forum_post_count"),
+    threads: num(forum, "forum_thread_count") ?? num(details, "discussion_count"),
+  };
+  if (!format.detailed) return compact({ ...summary, prefixes });
+  return compact({
+    ...summary,
+    title_en: translation(forum, "title"),
+    description: excerpt(stripMarkup(forum.forum_description ?? forum.description), 200),
+    posts: num(forum, "forum_post_count") ?? num(details, "message_count"),
+    last_post_at: isoDate(details.last_post_date),
     prefixes,
-    url: permalink(forum),
+    url: str(forum, "view_url") ?? permalink(forum),
   });
 }
 
 export function formatCategory(raw: unknown) {
   const category = asRecord(raw);
   return compact({
-    category_id: num(category, "category_id"),
-    title: cleanText(category.category_title),
-    description: excerpt(stripMarkup(category.category_description), 300),
-    url: permalink(category),
+    category_id: num(category, "category_id") ?? num(category, "node_id"),
+    title: cleanText(category.category_title) ?? cleanText(category.title),
+    title_en: translation(category, "title"),
+    description: excerpt(stripMarkup(category.category_description ?? category.description), 200),
+    parent_node_id: num(category, "parent_node_id"),
+    url: str(category, "view_url") ?? permalink(category),
   });
 }
 

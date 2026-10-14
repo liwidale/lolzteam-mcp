@@ -29,7 +29,7 @@ const textLength = (fallback: number) =>
   z
     .number()
     .int()
-    .min(100)
+    .min(50)
     .max(20_000)
     .default(fallback)
     .describe("Maximum characters of message text per item. Longer text is truncated and marked.");
@@ -136,8 +136,20 @@ export function registerForumTools(server: McpServer, forum: ApiClient): void {
     name: "forum_list_forums",
     title: "List forum sections",
     description:
-      "Lists LOLZTEAM Forum sections with their IDs, descriptions, thread counts and thread prefixes. Use the forum_id values with forum_list_threads and forum_search. parent_node_id shows the hierarchy.",
+      "Lists LOLZTEAM Forum sections with their IDs, titles and thread counts. Use the forum_id values with forum_list_threads and forum_search. parent_node_id points to the parent section or category, so the hierarchy can be rebuilt. Without filters it returns all several hundred sections, so narrow it with parent_category_id or parent_forum_id before asking for details.",
     inputSchema: {
+      detailed: z
+        .boolean()
+        .default(false)
+        .describe(
+          "Also return descriptions, English titles, post counts, last activity and links.",
+        ),
+      include_prefixes: z
+        .boolean()
+        .default(false)
+        .describe(
+          "Also return the thread prefixes of each section, for the prefix_ids filter of forum_list_threads.",
+        ),
       parent_category_id: id("parent category")
         .optional()
         .describe("Only direct children of this category."),
@@ -156,7 +168,9 @@ export function registerForumTools(server: McpServer, forum: ApiClient): void {
         signal,
       });
       return {
-        forums: records(response.forums).map(formatForum),
+        forums: records(response.forums).map((forum) =>
+          formatForum(forum, { detailed: args.detailed, prefixes: args.include_prefixes }),
+        ),
         total: num(response, "forums_total"),
       };
     },
