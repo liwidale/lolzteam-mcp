@@ -1,0 +1,51 @@
+{
+  "name": "lolzteam-mcp",
+  "version": "1.0.0",
+  "description": "MCP server that lets AI assistants search and read the LOLZTEAM Forum and LZT Market through their official APIs.",
+  "author": "Liwidale",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "lolzteam-mcp": "dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=22.18.0"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "start": "node dist/index.js",
+    "test": "node --test \"test/**/*.test.ts\"",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "catalog": "node scripts/generate-market-catalog.ts"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "lolzteam",
+    "lzt-market",
+    "ai",
+    "search"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/liwidale/lolzteam-mcp.git"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.1",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^24.19.2",
+    "eslint": "^10.12.0",
+    "prettier": "^3.9.10",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.71.2"
+  }
+}
