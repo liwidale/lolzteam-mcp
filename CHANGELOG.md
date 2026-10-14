@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.1
+
+### Improved
+
+- The package is now built and published by GitHub Actions with npm provenance, so you can verify on npmjs.com that it comes from this repository. The server works the same as in 1.0.0.
+
 ## 1.0.0
 
 ### Added

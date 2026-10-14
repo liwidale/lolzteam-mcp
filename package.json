@@ -1,6 +1,6 @@
 {
   "name": "lolzteam-mcp",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "MCP server that lets AI assistants search and read the LOLZTEAM Forum and LZT Market through their official APIs.",
   "author": "Liwidale",
   "license": "MIT",
