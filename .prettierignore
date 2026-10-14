@@ -1,4 +1,5 @@
 dist
 node_modules
 package-lock.json
-src/market/catalog.generated.ts
+src/endpoints/*.generated.ts
+openapi

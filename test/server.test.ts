@@ -8,9 +8,9 @@ describe("MCP server", () => {
   it("exposes only read-only tools with descriptions and input schemas", async () => {
     const { client, close } = await connect(() => json({}));
     const { tools } = await client.listTools();
-    assert.equal(tools.length, 21);
+    assert.equal(tools.length, 24);
     for (const tool of tools) {
-      assert.match(tool.name, /^(forum|market)_[a-z_]+$/);
+      assert.match(tool.name, /^(forum|market|api)_[a-z_]+$/);
       assert.ok((tool.description ?? "").length > 40, tool.name);
       assert.equal(tool.inputSchema.type, "object");
       assert.equal(tool.annotations?.readOnlyHint, true, tool.name);

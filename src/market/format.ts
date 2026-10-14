@@ -1,16 +1,15 @@
-import { asRecord, bool, isRecord, num, records, str, type JsonRecord } from "../util/json.ts";
+import { asRecord, bool, num, records, str, type JsonRecord } from "../util/json.ts";
+import { sanitize, type SanitizeLimits } from "../util/sanitize.ts";
 import { cleanText, compact, excerpt, isoDate, stripMarkup } from "../util/text.ts";
 
 export const MARKET_WEB_URL = "https://lzt.market";
 
-const SENSITIVE_KEY =
-  /pass(word)?|login|mafile|secret|token|cookie|imap|guard|recovery|phone|temp_?email|email_?code|^tel$|note|external_?auth/i;
-const NOISE_KEY =
-  /^can[A-Z_]|^can$|html|permissions|ignored|bumpSettings|copyFormatData|imagePreviewLinks|system_info|^show[A-Z]|visitor|uniqueKey|buyer|^description|^img$|image|avatar|icon|^url$|cart|is_fave|isBirthday|customFields|unfurl/i;
-const DATE_KEY = /(date|activity|_at|until|seen|expires|created|launched)$/i;
-const MAX_DEPTH = 3;
-const MAX_ENTRIES = 40;
-const MAX_STRING = 500;
+const ATTRIBUTE_LIMITS: SanitizeLimits = {
+  maxDepth: 3,
+  maxEntries: 40,
+  maxString: 500,
+  dropKeys: /^description/i,
+};
 
 const SUMMARY_KEYS = new Set([
   "item_id",
@@ -39,45 +38,12 @@ const SUMMARY_KEYS = new Set([
   "feedback_data",
 ]);
 
-function isSecret(key: string, value: unknown): boolean {
-  return SENSITIVE_KEY.test(key) && typeof value !== "number" && typeof value !== "boolean";
-}
-
-function details(value: unknown, depth: number, key = ""): unknown {
-  if (typeof value === "number" && DATE_KEY.test(key) && value > 1e9 && value < 1e11) {
-    return isoDate(value);
-  }
-  if (typeof value === "string") return excerpt(cleanText(value), MAX_STRING);
-  if (typeof value === "number" || typeof value === "boolean") return value;
-  if (depth > MAX_DEPTH) return undefined;
-  if (Array.isArray(value)) {
-    const list = value
-      .slice(0, MAX_ENTRIES)
-      .map((item) => details(item, depth + 1))
-      .filter((item) => item !== undefined);
-    if (value.length > MAX_ENTRIES) list.push(`[${value.length - MAX_ENTRIES} more items omitted]`);
-    return list.length > 0 ? list : undefined;
-  }
-  if (!isRecord(value)) return undefined;
-  const entries = Object.entries(value).filter(
-    ([name, item]) => !isSecret(name, item) && !NOISE_KEY.test(name),
-  );
-  const limit = depth === 0 ? entries.length : MAX_ENTRIES;
-  const result: JsonRecord = {};
-  for (const [name, item] of entries.slice(0, limit)) {
-    const clean = details(item, depth + 1, name);
-    if (clean !== undefined) result[name] = clean;
-  }
-  if (entries.length > limit) result._omitted_fields = entries.length - limit;
-  return Object.keys(result).length > 0 ? compact(result) : undefined;
-}
-
 function attributes(item: JsonRecord, skipEmpty: boolean): unknown {
   const rest = Object.entries(item).filter(([key, value]) => {
     if (SUMMARY_KEYS.has(key)) return false;
     return !skipEmpty || !(value === 0 || value === "" || value === false || value === null);
   });
-  return details(Object.fromEntries(rest), 0);
+  return sanitize(Object.fromEntries(rest), ATTRIBUTE_LIMITS);
 }
 
 function sellerFeedback(raw: unknown) {

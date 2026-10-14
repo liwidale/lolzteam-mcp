@@ -30,7 +30,7 @@ describe("Market catalog", () => {
 
   it("knows the shared parameters of every category", () => {
     for (const name of CATEGORY_NAMES) {
-      const filters = new Set(getCategory(name).filters.map((filter) => filter.name));
+      const filters = new Set(getCategory(name).params.map((param) => param.name));
       for (const reserved of Object.keys(RESERVED_FILTERS)) {
         assert.ok(filters.has(reserved), `${name} lacks ${reserved}`);
       }
@@ -65,7 +65,7 @@ describe("Market catalog", () => {
 
   it("rejects unknown filters and points to the discovery tool", () => {
     invalid(() => buildFilterQuery("steam", { drop_table: 1 }), /market_get_category_filters/);
-    invalid(() => buildFilterQuery("vpn", { "game[]": [730] }), /Unknown filter/);
+    invalid(() => buildFilterQuery("vpn", { "game[]": [730] }), /Unknown parameter/);
     invalid(() => buildFilterQuery("unknown", {}), /Unknown Market category/);
   });
 
@@ -82,7 +82,7 @@ describe("Market catalog", () => {
     invalid(() => buildFilterQuery("steam", { lmin: 1.5 }), /whole number/);
     invalid(() => buildFilterQuery("steam", { lmin: "ten" }), /expects a number/);
     invalid(() => buildFilterQuery("steam", { lmin: [1] }), /single value/);
-    invalid(() => buildFilterQuery("steam", { "game[]": [] }), /between 1 and 50/);
+    invalid(() => buildFilterQuery("steam", { "game[]": [] }), /between 1 and 250/);
     invalid(() => buildFilterQuery("steam", { hours_played: [1] }), /expects an object/);
     invalid(() => buildFilterQuery("steam", { hours_played: { "a]&b": 1 } }), /invalid key/);
   });

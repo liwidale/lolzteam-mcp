@@ -17,6 +17,7 @@ import { formatFeedback, formatItem, itemUrl, webUrl } from "./format.ts";
 export const MARKET_RATE_LIMITS = {
   search: { limit: 120, windowMs: 60_000 },
   get: { limit: 300, windowMs: 60_000 },
+  post: { limit: 30, windowMs: 60_000 },
 };
 
 const UNTRUSTED =
@@ -228,7 +229,7 @@ export function registerMarketTools(server: McpServer, market: ApiClient): void 
       const category = getCategory(args.category);
       return Promise.resolve({
         category: args.category,
-        title: category.title,
+        title: category.summary,
         typed_parameters: Object.values(RESERVED_FILTERS),
         filters: describeFilters(args.category).map((filter) => compact(filter)),
       });
