@@ -5,6 +5,7 @@
 </p>
 
 <p align="center">
+  <a href="https://www.npmjs.com/package/lolzteam-mcp"><img src="https://img.shields.io/npm/v/lolzteam-mcp?label=npm&color=4c9dff" alt="npm"></a>
   <a href="https://github.com/liwidale/lolzteam-mcp/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/liwidale/lolzteam-mcp/ci.yml?label=tests" alt="Tests"></a>
   <img src="https://img.shields.io/badge/platform-Node.js%2022%2B-lightgrey" alt="Node.js 22 or newer">
   <a href="LICENSE"><img src="https://img.shields.io/github/license/liwidale/lolzteam-mcp?color=3ad37e" alt="MIT License"></a>
@@ -101,7 +102,7 @@ Restart the client after editing its configuration. The 24 tools appear under th
 ### 3. Ask something
 
 - "What does the LOLZTEAM forum say about Steam Guard recovery? Summarize the three most discussed threads."
-- "Find the cheapest Steam accounts with CS2 Prime and no VAC ban, under 500 rubles, and check the sellers' feedback."
+- "Find the cheapest Steam accounts with CS2 Prime and no VAC ban under 500 rubles. Check the sellers' feedback."
 - "Who is the user `example`, and what have they posted recently?"
 
 ## Usage
@@ -220,17 +221,17 @@ A failed call returns `isError: true` and a JSON body such as:
 
 The server reads environment variables that your MCP client passes to it.
 
-| Variable                          | Default                  | Description                                                                                                   |
-| --------------------------------- | ------------------------ | ------------------------------------------------------------------------------------------------------------- |
-| `LOLZTEAM_TOKEN`                  | none                     | Token used for both APIs.                                                                                     |
-| `LOLZTEAM_FORUM_TOKEN`            | `LOLZTEAM_TOKEN`         | Separate token for the Forum API.                                                                             |
-| `LOLZTEAM_MARKET_TOKEN`           | `LOLZTEAM_TOKEN`         | Separate token for the Market API.                                                                            |
-| `LOLZTEAM_FORUM_BASE_URL`         | `https://api.lolz.live`  | Forum API host. The official documentation also lists `https://api.lolz.team` and `https://api.zelenka.guru`. |
-| `LOLZTEAM_MARKET_BASE_URL`        | `https://api.lzt.market` | Market API host.                                                                                              |
-| `LOLZTEAM_LOCALE`                 | none                     | Language of API messages, such as `en` or `ru`. Sent as the documented `locale` parameter.                    |
-| `LOLZTEAM_TIMEOUT_MS`             | `60000`                  | Timeout of one HTTP request, from 1000 to 600000.                                                             |
-| `LOLZTEAM_MAX_RETRIES`            | `2`                      | Retries after a 429, a 5xx response or a network failure, from 0 to 5.                                        |
-| `LOLZTEAM_MAX_RATE_LIMIT_WAIT_MS` | `15000`                  | Longest wait the server accepts before it returns `rate_limited` instead of waiting, from 0 to 120000.        |
+| Variable                          | Default                  | Description                                                                                                                                                                                                                        |
+| --------------------------------- | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `LOLZTEAM_TOKEN`                  | none                     | Token used for both APIs.                                                                                                                                                                                                          |
+| `LOLZTEAM_FORUM_TOKEN`            | `LOLZTEAM_TOKEN`         | Separate token for the Forum API.                                                                                                                                                                                                  |
+| `LOLZTEAM_MARKET_TOKEN`           | `LOLZTEAM_TOKEN`         | Separate token for the Market API.                                                                                                                                                                                                 |
+| `LOLZTEAM_FORUM_BASE_URL`         | `https://api.lolz.live`  | Forum API host. The official documentation also lists `https://api.lolz.team` and `https://api.zelenka.guru`.                                                                                                                      |
+| `LOLZTEAM_MARKET_BASE_URL`        | `https://api.lzt.market` | Market API host.                                                                                                                                                                                                                   |
+| `LOLZTEAM_LOCALE`                 | none                     | Language of the server and the API messages, such as `en` or `ru`. Tool descriptions, errors and hints use it, and the API receives it as the documented `locale` parameter. Languages without a translation fall back to English. |
+| `LOLZTEAM_TIMEOUT_MS`             | `60000`                  | Timeout of one HTTP request, from 1000 to 600000.                                                                                                                                                                                  |
+| `LOLZTEAM_MAX_RETRIES`            | `2`                      | Retries after a 429, a 5xx response or a network failure, from 0 to 5.                                                                                                                                                             |
+| `LOLZTEAM_MAX_RATE_LIMIT_WAIT_MS` | `15000`                  | Longest wait the server accepts before it returns `rate_limited` instead of waiting, from 0 to 120000.                                                                                                                             |
 
 The server starts without a token so that clients can list its tools. Calls to an API without a token return `not_configured`.
 
@@ -327,7 +328,7 @@ A new endpoint that matches none of these rules appears in the pull request unde
 1. Your MCP client starts the server and lists its tools over stdio.
 2. When the assistant calls a tool, the arguments are validated with Zod and checked against the endpoint catalog generated from the official OpenAPI documents.
 3. The HTTP client waits for a free slot in the local rate limit bucket, sends the request with the bearer token and a timeout and retries rate limits, server errors and network failures with backoff.
-4. The response is reduced to the fields that matter, texts are cleaned and truncated, and the result goes back to the assistant as JSON.
+4. The response is reduced to the fields that matter and its texts are cleaned and truncated. The result goes back to the assistant as JSON.
 
 The official OpenAPI documents published with the API documentation were the reference for every endpoint, parameter and response field the server uses.
 
@@ -341,6 +342,7 @@ src/
   tool.ts                   Tool registration, results and error format
   endpoints/                Generated endpoint catalogs, read-only policy, universal tools
   http/                     HTTP client, query encoding and rate limiter
+  i18n/                     User-facing texts: English source and Russian translation
   forum/                    Forum tools and response formatting
   market/                   Market tools, formatting and category filters
   util/                     JSON access, text cleanup and response sanitizing
@@ -354,7 +356,7 @@ test/                       Unit and integration tests
 
 ## Contributing
 
-Issues and pull requests are welcome. Keep the server read-only, base every parameter on the official API documentation, add tests for new behavior and run `npm test`, `npm run lint` and `npm run typecheck` before you open a pull request.
+Issues and pull requests are welcome. Keep the server read-only, put every user-facing text into `src/i18n/en.ts` and its translations, base every parameter on the official API documentation, add tests for new behavior and run `npm test`, `npm run lint` and `npm run typecheck` before you open a pull request.
 
 ## License
 

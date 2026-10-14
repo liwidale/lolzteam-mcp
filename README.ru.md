@@ -5,6 +5,7 @@
 </p>
 
 <p align="center">
+  <a href="https://www.npmjs.com/package/lolzteam-mcp"><img src="https://img.shields.io/npm/v/lolzteam-mcp?label=npm&color=4c9dff" alt="npm"></a>
   <a href="https://github.com/liwidale/lolzteam-mcp/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/liwidale/lolzteam-mcp/ci.yml?label=tests" alt="Тесты"></a>
   <img src="https://img.shields.io/badge/platform-Node.js%2022%2B-lightgrey" alt="Node.js 22 или новее">
   <a href="LICENSE"><img src="https://img.shields.io/github/license/liwidale/lolzteam-mcp?color=3ad37e" alt="Лицензия MIT"></a>
@@ -220,17 +221,17 @@ claude mcp add --transport stdio --env LOLZTEAM_TOKEN=your-token lolzteam -- nod
 
 Сервер читает переменные окружения, которые передаёт ему MCP-клиент.
 
-| Переменная                        | По умолчанию             | Описание                                                                                                        |
-| --------------------------------- | ------------------------ | --------------------------------------------------------------------------------------------------------------- |
-| `LOLZTEAM_TOKEN`                  | нет                      | Токен для обоих API.                                                                                            |
-| `LOLZTEAM_FORUM_TOKEN`            | `LOLZTEAM_TOKEN`         | Отдельный токен для Forum API.                                                                                  |
-| `LOLZTEAM_MARKET_TOKEN`           | `LOLZTEAM_TOKEN`         | Отдельный токен для Market API.                                                                                 |
-| `LOLZTEAM_FORUM_BASE_URL`         | `https://api.lolz.live`  | Адрес Forum API. Официальная документация также указывает `https://api.lolz.team` и `https://api.zelenka.guru`. |
-| `LOLZTEAM_MARKET_BASE_URL`        | `https://api.lzt.market` | Адрес Market API.                                                                                               |
-| `LOLZTEAM_LOCALE`                 | нет                      | Язык сообщений API, например `en` или `ru`. Передаётся в документированном параметре `locale`.                  |
-| `LOLZTEAM_TIMEOUT_MS`             | `60000`                  | Тайм-аут одного HTTP-запроса, от 1000 до 600000.                                                                |
-| `LOLZTEAM_MAX_RETRIES`            | `2`                      | Повторы после 429, ответа 5xx или сетевой ошибки, от 0 до 5.                                                    |
-| `LOLZTEAM_MAX_RATE_LIMIT_WAIT_MS` | `15000`                  | Самое долгое ожидание, на которое согласен сервер, прежде чем вернуть `rate_limited`, от 0 до 120000.           |
+| Переменная                        | По умолчанию             | Описание                                                                                                                                                                                                               |
+| --------------------------------- | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `LOLZTEAM_TOKEN`                  | нет                      | Токен для обоих API.                                                                                                                                                                                                   |
+| `LOLZTEAM_FORUM_TOKEN`            | `LOLZTEAM_TOKEN`         | Отдельный токен для Forum API.                                                                                                                                                                                         |
+| `LOLZTEAM_MARKET_TOKEN`           | `LOLZTEAM_TOKEN`         | Отдельный токен для Market API.                                                                                                                                                                                        |
+| `LOLZTEAM_FORUM_BASE_URL`         | `https://api.lolz.live`  | Адрес Forum API. Официальная документация также указывает `https://api.lolz.team` и `https://api.zelenka.guru`.                                                                                                        |
+| `LOLZTEAM_MARKET_BASE_URL`        | `https://api.lzt.market` | Адрес Market API.                                                                                                                                                                                                      |
+| `LOLZTEAM_LOCALE`                 | нет                      | Язык сервера и сообщений API, например `en` или `ru`. На нем выводятся описания инструментов, ошибки и подсказки, а API получает его в документированном параметре `locale`. Языки без перевода заменяются английским. |
+| `LOLZTEAM_TIMEOUT_MS`             | `60000`                  | Тайм-аут одного HTTP-запроса, от 1000 до 600000.                                                                                                                                                                       |
+| `LOLZTEAM_MAX_RETRIES`            | `2`                      | Повторы после 429, ответа 5xx или сетевой ошибки, от 0 до 5.                                                                                                                                                           |
+| `LOLZTEAM_MAX_RATE_LIMIT_WAIT_MS` | `15000`                  | Самое долгое ожидание, на которое согласен сервер, прежде чем вернуть `rate_limited`, от 0 до 120000.                                                                                                                  |
 
 Сервер запускается и без токена, чтобы клиент мог получить список инструментов. Вызовы API без токена возвращают `not_configured`.
 
@@ -341,6 +342,7 @@ src/
   tool.ts                   Регистрация инструментов, формат результатов и ошибок
   endpoints/                Сгенерированные каталоги, политика только чтения, универсальные инструменты
   http/                     HTTP-клиент, кодирование запросов и лимиты
+  i18n/                     Тексты для пользователя: английский оригинал и русский перевод
   forum/                    Инструменты форума и форматирование ответов
   market/                   Инструменты маркета, форматирование и фильтры категорий
   util/                     Доступ к JSON, очистка текста и ответов
@@ -354,7 +356,7 @@ test/                       Модульные и интеграционные �
 
 ## Участие в разработке
 
-Issues и pull requests приветствуются. Сервер должен оставаться только для чтения, каждый параметр должен опираться на официальную документацию API, новое поведение должно сопровождаться тестами, а перед pull request нужно запустить `npm test`, `npm run lint` и `npm run typecheck`.
+Issues и pull requests приветствуются. Сервер должен оставаться только для чтения, каждый текст для пользователя должен лежать в `src/i18n/en.ts` и его переводах, каждый параметр должен опираться на официальную документацию API, новое поведение должно сопровождаться тестами, а перед pull request нужно запустить `npm test`, `npm run lint` и `npm run typecheck`.
 
 ## Лицензия
 

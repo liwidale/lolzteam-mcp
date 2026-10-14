@@ -11,4 +11,5 @@
 - Local rate limiting that follows the official limits and the API rate limit headers, with retries for rate limits, server errors and network failures.
 - Structured errors with a code, the API message and a hint for the assistant.
 - Universal tools that list, describe and call every read-only endpoint of both APIs, generated from the official OpenAPI documents.
+- English and Russian interface. `LOLZTEAM_LOCALE` switches tool descriptions, errors and hints.
 - A daily workflow that downloads the official OpenAPI documents, regenerates the endpoint catalogs and opens a pull request with a report of what changed.
