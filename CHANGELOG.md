@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.0.3
+
+### Added
+
+- The setup command now finds and configures Antigravity. You can also choose it with `--client antigravity`.
+
+### Improved
+
+- The README warns that the forum rules forbid letting an LLM write messages for you and explains how to set up a client by hand.
+
 ## 1.0.2
 
 ### Improved
