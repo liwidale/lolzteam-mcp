@@ -18,6 +18,13 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm install -g npm@11
+      - name: Check that the tag matches package.json
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match version $version in package.json."
+            exit 1
+          fi
       - run: npm ci
       - run: npm run format:check
       - run: npm run lint
@@ -32,7 +39,14 @@ jobs:
             found { print }
           ' CHANGELOG.md > release-notes.md
           test -s release-notes.md
-      - run: npm publish --access public
+      - name: Publish to npm
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          if npm view "lolzteam-mcp@$version" version > /dev/null 2>&1; then
+            echo "lolzteam-mcp@$version is already on npm."
+          else
+            npm publish --access public
+          fi
       - run: gh release create "$GITHUB_REF_NAME" --title "LOLZTEAM MCP ${GITHUB_REF_NAME#v}" --notes-file release-notes.md
         env:
           GH_TOKEN: ${{ github.token }}
