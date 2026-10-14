@@ -3,10 +3,12 @@ name: Release
 on:
   push:
     tags: ["v*"]
+  workflow_dispatch:
 
 permissions:
   contents: write
   id-token: write
+  packages: write
 
 jobs:
   release:
@@ -18,13 +20,15 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm install -g npm@11
-      - name: Check that the tag matches package.json
+      - name: Read the version
+        id: version
         run: |
           version="$(node -p "require('./package.json').version")"
-          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+          if [ "$GITHUB_EVENT_NAME" = "push" ] && [ "v$version" != "$GITHUB_REF_NAME" ]; then
             echo "Tag $GITHUB_REF_NAME does not match version $version in package.json."
             exit 1
           fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
       - run: npm ci
       - run: npm run format:check
       - run: npm run lint
@@ -32,21 +36,47 @@ jobs:
       - run: npm test
       - run: npm run build
       - name: Extract release notes
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
         run: |
-          version="${GITHUB_REF_NAME#v}"
-          awk -v version="$version" '
+          awk -v version="$VERSION" '
             $0 ~ "^## " { if (found) exit; if ($2 == version) { found = 1; next } }
             found { print }
           ' CHANGELOG.md > release-notes.md
           test -s release-notes.md
       - name: Publish to npm
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
         run: |
-          version="${GITHUB_REF_NAME#v}"
-          if npm view "lolzteam-mcp@$version" version > /dev/null 2>&1; then
-            echo "lolzteam-mcp@$version is already on npm."
+          if npm view "lolzteam-mcp@$VERSION" version > /dev/null 2>&1; then
+            echo "lolzteam-mcp@$VERSION is already on npm."
           else
             npm publish --access public
           fi
-      - run: gh release create "$GITHUB_REF_NAME" --title "LOLZTEAM MCP ${GITHUB_REF_NAME#v}" --notes-file release-notes.md
+      - name: Publish to GitHub Packages
         env:
+          VERSION: ${{ steps.version.outputs.version }}
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_CONFIG_PROVENANCE: "false"
+          NPM_CONFIG_USERCONFIG: ${{ runner.temp }}/github-packages.npmrc
+        run: |
+          printf '%s\n' \
+            '@liwidale:registry=https://npm.pkg.github.com' \
+            '//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}' > "$NPM_CONFIG_USERCONFIG"
+          npm pkg set name=@liwidale/lolzteam-mcp
+          if npm view "@liwidale/lolzteam-mcp@$VERSION" version > /dev/null 2>&1; then
+            echo "@liwidale/lolzteam-mcp@$VERSION is already on GitHub Packages."
+          else
+            npm publish --registry https://npm.pkg.github.com --ignore-scripts
+          fi
+          git checkout -- package.json
+      - name: Create the GitHub release
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
           GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "v$VERSION" > /dev/null 2>&1; then
+            echo "The v$VERSION release already exists."
+          else
+            gh release create "v$VERSION" --title "LOLZTEAM MCP $VERSION" --notes-file release-notes.md
+          fi
