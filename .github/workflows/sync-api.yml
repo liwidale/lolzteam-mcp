@@ -1,0 +1,73 @@
+name: Sync API
+
+on:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: sync-api
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Download the official OpenAPI documents and regenerate the catalogs
+        run: node scripts/generate.ts --download --report "$RUNNER_TEMP/changes.md"
+      - name: Stop when nothing changed
+        id: diff
+        run: |
+          if git diff --quiet -- openapi src/endpoints; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "The API documents have not changed."
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Run the checks
+        id: checks
+        if: steps.diff.outputs.changed == 'true'
+        continue-on-error: true
+        run: |
+          npm run lint
+          npm run typecheck
+          npm test
+          npm run build
+      - name: Open or update the pull request
+        if: steps.diff.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CHECKS: ${{ steps.checks.outcome }}
+        run: |
+          {
+            echo
+            echo "## Checks"
+            echo
+            if [ "$CHECKS" = "success" ]; then
+              echo "Lint, type check, tests and build passed."
+            else
+              echo "Some checks failed. Open the workflow run for details before merging."
+            fi
+          } >> "$RUNNER_TEMP/changes.md"
+          branch="api-sync"
+          git config user.name "Liwidale"
+          git config user.email "299171130+liwidale@users.noreply.github.com"
+          git switch -C "$branch"
+          git add openapi src/endpoints
+          git commit -m "{ゝ} Updated code"
+          git push --force origin "$branch"
+          if [ "$(gh pr view "$branch" --json state --jq .state 2>/dev/null)" = "OPEN" ]; then
+            gh pr edit "$branch" --body-file "$RUNNER_TEMP/changes.md"
+          else
+            gh pr create --head "$branch" --base main --title "Updated API catalog" --body-file "$RUNNER_TEMP/changes.md"
+          fi
