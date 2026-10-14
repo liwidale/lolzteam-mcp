@@ -408,6 +408,16 @@ npm run build
 
 Tests use the built-in Node.js test runner and a fake `fetch`, so they never touch the real APIs and need no token. They cover configuration, the HTTP client with retries, rate limits and error mapping, catalog generation and the read-only policy, parameter validation and every tool through a real MCP client connection. One test fails when the generated catalogs no longer match the OpenAPI documents in `openapi/`.
 
+### Releasing
+
+Releases are published from GitHub Actions through npm trusted publishing, so the repository stores no npm token.
+
+1. Set the new version in `package.json` with `npm version 1.0.1 --no-git-tag-version`. The server reads its version from this file.
+2. Add a `## 1.0.1` section to `CHANGELOG.md` with `### Added`, `### Improved` or `### Fixed` notes. The workflow turns it into the release notes.
+3. Commit with `{ゝ} Released v1.0.1`, create the tag with `git tag v1.0.1` and push both with `git push origin main --tags`.
+
+The `Release` workflow checks that the tag matches `package.json`, runs every check, publishes the package to npm with provenance and creates the GitHub release. When the version is already on npm, it skips publishing and only creates the release.
+
 ### Keeping up with API changes
 
 The official OpenAPI documents live in `openapi/`. `npm run generate` turns them into the endpoint catalogs in `src/endpoints/forum.generated.ts` and `src/endpoints/market.generated.ts`. The universal tools and the Market category filters read these catalogs, so a new endpoint, parameter or filter needs no code. The dedicated tools keep their hand-picked parameters, and anything new is reachable through the universal tools right away.
