@@ -120,6 +120,93 @@ For example, to configure only Cursor without questions on macOS or Linux:
 LOLZTEAM_TOKEN=your-token npx -y lolzteam-mcp setup --yes --client cursor
 ```
 
+<details>
+<summary><b>Set up a client by hand</b></summary>
+
+<br>
+
+Use this when the setup command fails, when your client is not in its list or when you prefer to edit the configuration yourself. Any MCP client that starts servers over stdio works.
+
+1. Check that the package runs. The command prints the version:
+
+   ```bash
+   npx -y lolzteam-mcp@latest --version
+   ```
+
+2. Quit the client and open its configuration file in a text editor. Create the file if it does not exist yet.
+
+   | Client         | Windows                                           | macOS                                                             | Linux                                         |
+   | -------------- | ------------------------------------------------- | ----------------------------------------------------------------- | --------------------------------------------- |
+   | Claude Desktop | `%APPDATA%\Claude\claude_desktop_config.json`     | `~/Library/Application Support/Claude/claude_desktop_config.json` | `~/.config/Claude/claude_desktop_config.json` |
+   | Cursor         | `%USERPROFILE%\.cursor\mcp.json`                  | `~/.cursor/mcp.json`                                              | `~/.cursor/mcp.json`                          |
+   | Windsurf       | `%USERPROFILE%\.codeium\windsurf\mcp_config.json` | `~/.codeium/windsurf/mcp_config.json`                             | `~/.codeium/windsurf/mcp_config.json`         |
+
+   Other clients describe the location in their documentation. Look for the `mcpServers` setting.
+
+3. Add the `lolzteam` server and put your token in place of `your-token`.
+
+   macOS and Linux:
+
+   ```json
+   {
+     "mcpServers": {
+       "lolzteam": {
+         "command": "npx",
+         "args": ["-y", "lolzteam-mcp@latest"],
+         "env": {
+           "LOLZTEAM_TOKEN": "your-token"
+         }
+       }
+     }
+   }
+   ```
+
+   Windows:
+
+   ```json
+   {
+     "mcpServers": {
+       "lolzteam": {
+         "command": "cmd",
+         "args": ["/c", "npx", "-y", "lolzteam-mcp@latest"],
+         "env": {
+           "LOLZTEAM_TOKEN": "your-token"
+         }
+       }
+     }
+   }
+   ```
+
+   If the file already has an `mcpServers` object, add only the `"lolzteam": { ... }` block inside it and separate it from the other servers with a comma.
+
+4. Save the file and start the client. Claude Desktop keeps running in the tray or menu bar after you close its window, so quit it from there before starting it again.
+
+**When `npx` does not work.** Install the package once and point the client straight to it:
+
+```bash
+npm install -g lolzteam-mcp
+```
+
+```bash
+npm root -g
+```
+
+The second command prints the folder with global packages. In the configuration, use `node` as the command and the full path to `lolzteam-mcp/dist/index.js` inside that folder as the argument. On Windows, double every backslash in JSON:
+
+```json
+"lolzteam": {
+  "command": "node",
+  "args": ["C:\\Users\\you\\AppData\\Roaming\\npm\\node_modules\\lolzteam-mcp\\dist\\index.js"],
+  "env": {
+    "LOLZTEAM_TOKEN": "your-token"
+  }
+}
+```
+
+This copy does not update itself. Run `npm install -g lolzteam-mcp@latest` to get a new version.
+
+</details>
+
 ### Claude Code
 
 Claude Code keeps its own list of servers. Add the server with one command and put your token in place of `your-token`.
@@ -137,32 +224,6 @@ claude mcp add --transport stdio --scope user --env LOLZTEAM_TOKEN=your-token lo
 ```
 
 Run `claude mcp list` to check that `lolzteam` is connected.
-
-### Other clients and manual setup
-
-Any MCP client that starts servers over stdio works. Add this entry to its configuration file. On Windows, replace `"command": "npx"` and its arguments with `"command": "cmd"` and `"args": ["/c", "npx", "-y", "lolzteam-mcp@latest"]`.
-
-```json
-{
-  "mcpServers": {
-    "lolzteam": {
-      "command": "npx",
-      "args": ["-y", "lolzteam-mcp@latest"],
-      "env": {
-        "LOLZTEAM_TOKEN": "your-token"
-      }
-    }
-  }
-}
-```
-
-The configuration files the setup edits:
-
-| Client         | Windows                                           | macOS                                                             | Linux                                         |
-| -------------- | ------------------------------------------------- | ----------------------------------------------------------------- | --------------------------------------------- |
-| Claude Desktop | `%APPDATA%\Claude\claude_desktop_config.json`     | `~/Library/Application Support/Claude/claude_desktop_config.json` | `~/.config/Claude/claude_desktop_config.json` |
-| Cursor         | `%USERPROFILE%\.cursor\mcp.json`                  | `~/.cursor/mcp.json`                                              | `~/.cursor/mcp.json`                          |
-| Windsurf       | `%USERPROFILE%\.codeium\windsurf\mcp_config.json` | `~/.codeium/windsurf/mcp_config.json`                             | `~/.codeium/windsurf/mcp_config.json`         |
 
 ### Updating
 
