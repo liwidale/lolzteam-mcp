@@ -22,7 +22,8 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "catalog": "node scripts/generate-market-catalog.ts"
+    "catalog": "node scripts/generate-market-catalog.ts",
+    "smoke": "npm run build && node scripts/smoke.ts"
   },
   "keywords": [
     "mcp",
