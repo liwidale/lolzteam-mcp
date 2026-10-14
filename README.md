@@ -424,6 +424,7 @@ The Market documentation also mentions a stricter limit of 20 category searches 
 - **Private profile data is not exposed.** Forum user results contain public profile fields only, never balances, email or secret answers, even for `me`.
 - **Untrusted content is treated as data.** Forum and Market texts are written by other people. The server strips invisible and bidirectional control characters, never interprets the text and tells the assistant, in its instructions and tool descriptions, to treat it as data.
 - **Strict input validation.** Every argument is checked against a schema with ranges and documented values. Path identifiers must be positive integers or `me`, Market filters must exist in the official documentation and base URLs must use HTTPS.
+- **No third-party code at runtime.** The package has no dependencies, so installing it adds only its own code. The MCP protocol, input validation and the HTTP client are part of the project and are covered by tests that run against the official MCP SDK client.
 - **Local only.** The server uses the stdio transport and opens no network port. It sends nothing anywhere except the two configured APIs. There is no telemetry.
 
 Follow the LOLZTEAM rules and the API terms when you use the data the server returns.
@@ -497,8 +498,8 @@ A new endpoint that matches none of these rules appears in the pull request unde
 
 ## How it works
 
-1. Your MCP client starts the server and lists its tools over stdio.
-2. When the assistant calls a tool, the arguments are validated with Zod and checked against the endpoint catalog generated from the official OpenAPI documents.
+1. Your MCP client starts the server and lists its tools over stdio. The server implements the MCP protocol itself and has no runtime dependencies.
+2. When the assistant calls a tool, the arguments are validated against the tool schema and the endpoint catalog generated from the official OpenAPI documents.
 3. The HTTP client waits for a free slot in the local rate limit bucket, sends the request with the bearer token and a timeout and retries rate limits, server errors and network failures with backoff.
 4. The response is reduced to the fields that matter and its texts are cleaned and truncated. The result goes back to the assistant as JSON.
 
@@ -512,11 +513,13 @@ src/
   server.ts                 MCP server, instructions and API clients
   config.ts                 Environment variables and validation
   tool.ts                   Tool registration, results and error format
+  schema.ts                 Tool argument schemas, validation and JSON Schema
   endpoints/                Generated endpoint catalogs, read-only policy, universal tools
   http/                     HTTP client, query encoding and rate limiter
   i18n/                     User-facing texts: English source and Russian translation
   forum/                    Forum tools and response formatting
   market/                   Market tools, formatting and category filters
+  mcp/                      MCP protocol over stdio
   setup/                    Setup command: token check, client detection, configuration files
   util/                     JSON access, text cleanup and response sanitizing
 openapi/                    Official OpenAPI documents of both APIs
