@@ -18,7 +18,11 @@ if (!process.env.LOLZTEAM_TOKEN) {
 const env = Object.fromEntries(
   Object.entries(process.env).filter((entry): entry is [string, string] => entry[1] !== undefined),
 );
-const transport = new StdioClientTransport({ command: process.execPath, args: ["dist/index.js"], env });
+const transport = new StdioClientTransport({
+  command: process.execPath,
+  args: ["dist/index.js"],
+  env,
+});
 const client = new Client({ name: "lolzteam-mcp-smoke", version: "1.0.0" });
 await client.connect(transport);
 

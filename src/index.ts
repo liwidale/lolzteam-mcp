@@ -2,6 +2,7 @@
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { ConfigError, loadConfig } from "./config.ts";
 import { createServer, createServices } from "./server.ts";
+import { VERSION } from "./version.ts";
 
 async function main(): Promise<void> {
   const config = loadConfig();
@@ -25,6 +26,7 @@ async function main(): Promise<void> {
   process.on("SIGTERM", shutdown);
 
   await server.connect(new StdioServerTransport());
+  process.stderr.write(`lolzteam-mcp ${VERSION} is running on stdio\n`);
 }
 
 main().catch((error: unknown) => {
