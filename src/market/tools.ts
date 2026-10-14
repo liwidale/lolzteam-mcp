@@ -1,5 +1,5 @@
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { z } from "zod";
+import type { McpServer } from "../mcp/server.ts";
+import { s } from "../schema.ts";
 import type { ApiClient } from "../http/client.ts";
 import { registerTool } from "../tool.ts";
 import { asRecord, bool, num, records, str } from "../util/json.ts";
@@ -23,38 +23,38 @@ export const MARKET_RATE_LIMITS = {
 function enumOf(category: string, filter: string) {
   const values = filterValues(category, filter);
   if (values.length === 0) throw new Error(`The Market catalog has no values for ${filter}.`);
-  return z.enum(values as [string, ...string[]]);
+  return s.enum(values as [string, ...string[]]);
 }
 
 const GAME_CATEGORIES = CATEGORY_NAMES.filter((name) => name !== "all") as [string, ...string[]];
 const STEAM_INVENTORY_APPS = [730, 578080, 753, 570, 440, 252490, 304930, 232090, 322330] as const;
 
-const filterValue = z.union([
-  z.string().max(200),
-  z.number(),
-  z.boolean(),
-  z.array(z.union([z.string().max(200), z.number()])).max(50),
-  z.record(z.string(), z.union([z.string().max(200), z.number()])),
+const filterValue = s.union([
+  s.string().max(200),
+  s.number(),
+  s.boolean(),
+  s.array(s.union([s.string().max(200), s.number()])).max(50),
+  s.record(s.string(), s.union([s.string().max(200), s.number()])),
 ]);
 
 export function registerMarketTools(server: McpServer, market: ApiClient): void {
   registerTool(server, {
     name: "market_search",
     inputSchema: {
-      category: z.enum(CATEGORY_NAMES).default("all"),
-      title: z.string().trim().min(1).max(200).optional(),
-      min_price: z.number().min(0).optional(),
-      max_price: z.number().min(0).optional(),
+      category: s.enum(CATEGORY_NAMES).default("all"),
+      title: s.string().trim().min(1).max(200).optional(),
+      min_price: s.number().min(0).optional(),
+      max_price: s.number().min(0).optional(),
       currency: enumOf("all", "currency").optional(),
       order_by: enumOf("all", "order_by").optional(),
-      origin: z.array(enumOf("all", "origin[]")).min(1).max(10).optional(),
-      exclude_origin: z.array(enumOf("all", "not_origin[]")).min(1).max(10).optional(),
-      seller_id: z.number().int().positive().optional(),
-      not_sold_before: z.boolean().optional(),
-      filters: z.record(z.string().min(1).max(100), filterValue).optional(),
-      cursor: z.string().trim().min(1).max(500).optional(),
-      description_length: z.number().int().min(0).max(2_000).default(200),
-      include_attributes: z.boolean().default(false),
+      origin: s.array(enumOf("all", "origin[]")).min(1).max(10).optional(),
+      exclude_origin: s.array(enumOf("all", "not_origin[]")).min(1).max(10).optional(),
+      seller_id: s.number().int().positive().optional(),
+      not_sold_before: s.boolean().optional(),
+      filters: s.record(s.string().min(1).max(100), filterValue).optional(),
+      cursor: s.string().trim().min(1).max(500).optional(),
+      description_length: s.number().int().min(0).max(2_000).default(200),
+      include_attributes: s.boolean().default(false),
     },
     handler: async (args, { signal }) => {
       const category = getCategory(args.category);
@@ -101,8 +101,8 @@ export function registerMarketTools(server: McpServer, market: ApiClient): void 
   registerTool(server, {
     name: "market_get_item",
     inputSchema: {
-      item_id: z.number().int().positive(),
-      description_length: z.number().int().min(0).max(20_000).default(4_000),
+      item_id: s.number().int().positive(),
+      description_length: s.number().int().min(0).max(20_000).default(4_000),
     },
     handler: async (args, { signal }) => {
       const response = await market.request({ path: `/${args.item_id}`, bucket: "search", signal });
@@ -147,7 +147,7 @@ export function registerMarketTools(server: McpServer, market: ApiClient): void 
   registerTool(server, {
     name: "market_get_category_filters",
     inputSchema: {
-      category: z.enum(CATEGORY_NAMES),
+      category: s.enum(CATEGORY_NAMES),
     },
     handler: (args) => {
       const category = getCategory(args.category);
@@ -163,9 +163,9 @@ export function registerMarketTools(server: McpServer, market: ApiClient): void 
   registerTool(server, {
     name: "market_list_category_games",
     inputSchema: {
-      category: z.enum(GAME_CATEGORIES),
-      query: z.string().trim().min(1).max(100).optional(),
-      limit: z.number().int().min(1).max(200).default(30),
+      category: s.enum(GAME_CATEGORIES),
+      query: s.string().trim().min(1).max(100).optional(),
+      limit: s.number().int().min(1).max(200).default(30),
     },
     handler: async (args, { signal }) => {
       const response = await market.request({
@@ -197,13 +197,13 @@ export function registerMarketTools(server: McpServer, market: ApiClient): void 
   registerTool(server, {
     name: "market_get_seller_feedback",
     inputSchema: {
-      seller_id: z.number().int().positive(),
-      type: z.enum(["all", "positive", "negative"]).default("all"),
-      category_id: z.number().int().positive().optional(),
-      exclude_automatic: z.boolean().default(false),
-      page: z.number().int().min(1).max(10_000).optional(),
-      limit: z.number().int().min(1).max(50).optional(),
-      text_length: z.number().int().min(50).max(5_000).default(500),
+      seller_id: s.number().int().positive(),
+      type: s.enum(["all", "positive", "negative"]).default("all"),
+      category_id: s.number().int().positive().optional(),
+      exclude_automatic: s.boolean().default(false),
+      page: s.number().int().min(1).max(10_000).optional(),
+      limit: s.number().int().min(1).max(50).optional(),
+      text_length: s.number().int().min(50).max(5_000).default(500),
     },
     handler: async (args, { signal }) => {
       const response = await market.request({
@@ -246,8 +246,8 @@ export function registerMarketTools(server: McpServer, market: ApiClient): void 
   registerTool(server, {
     name: "market_get_steam_inventory_value",
     inputSchema: {
-      item_id: z.number().int().positive(),
-      app_id: z.literal(STEAM_INVENTORY_APPS).optional(),
+      item_id: s.number().int().positive(),
+      app_id: s.literal(STEAM_INVENTORY_APPS).optional(),
       currency: enumOf("all", "currency").optional(),
     },
     handler: async (args, { signal }) => {

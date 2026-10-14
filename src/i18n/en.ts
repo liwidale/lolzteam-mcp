@@ -110,6 +110,26 @@ export const en = {
     singleValue: (name: string) => `Parameter "${name}" expects a single value.`,
     pathId: (name: string) => `Parameter "${name}" must be an ID such as 123 or me.`,
     missingRequired: (names: string) => `Missing required parameters: ${names}.`,
+    invalidArguments: (details: string) => `Invalid arguments: ${details}.`,
+  },
+
+  schema: {
+    required: "is required",
+    expectedString: "must be text",
+    expectedNumber: "must be a number",
+    expectedInteger: "must be a whole number",
+    expectedBoolean: "must be true or false",
+    expectedArray: "must be a list",
+    expectedObject: "must be an object",
+    positive: "must be greater than 0",
+    minimum: (min: number) => `must be at least ${min}`,
+    maximum: (max: number) => `must be at most ${max}`,
+    minLength: (min: number) => `must have at least ${min} characters`,
+    maxLength: (max: number) => `must have at most ${max} characters`,
+    minItems: (min: number) => `must have at least ${min} items`,
+    maxItems: (max: number) => `must have at most ${max} items`,
+    oneOf: (values: string) => `must be one of: ${values}`,
+    unsupported: "has an unsupported type or value",
   },
 
   output: {

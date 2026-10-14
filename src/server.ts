@@ -1,4 +1,4 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "./mcp/server.ts";
 import type { Config } from "./config.ts";
 import { registerEndpointTools } from "./endpoints/tools.ts";
 import { registerForumTools, FORUM_RATE_LIMITS } from "./forum/tools.ts";
@@ -43,7 +43,7 @@ export function createServices(config: Config, fetchImpl?: typeof fetch): Servic
 export function createServer(services: Services): McpServer {
   const server = new McpServer(
     { name: "lolzteam-mcp", title: "LOLZTEAM", version: VERSION },
-    { instructions: messages.server.instructions },
+    messages.server.instructions,
   );
   registerForumTools(server, services.forum);
   registerMarketTools(server, services.market);

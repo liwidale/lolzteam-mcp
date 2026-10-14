@@ -113,6 +113,30 @@ export const ru: Messages = {
     singleValue: (name) => `Параметр "${name}" принимает одно значение.`,
     pathId: (name) => `Параметр "${name}" должен быть ID, например 123 или me.`,
     missingRequired: (names) => `Не указаны обязательные параметры: ${names}.`,
+    invalidArguments: (details) => `Некорректные аргументы: ${details}.`,
+  },
+
+  schema: {
+    required: "обязателен",
+    expectedString: "должен быть текстом",
+    expectedNumber: "должен быть числом",
+    expectedInteger: "должен быть целым числом",
+    expectedBoolean: "должен быть true или false",
+    expectedArray: "должен быть списком",
+    expectedObject: "должен быть объектом",
+    positive: "должен быть больше 0",
+    minimum: (min) => `должен быть не меньше ${min}`,
+    maximum: (max) => `должен быть не больше ${max}`,
+    minLength: (min) =>
+      `должен содержать не меньше ${min} ${plural(min, "символа", "символов", "символов")}`,
+    maxLength: (max) =>
+      `должен содержать не больше ${max} ${plural(max, "символа", "символов", "символов")}`,
+    minItems: (min) =>
+      `должен содержать не меньше ${min} ${plural(min, "элемента", "элементов", "элементов")}`,
+    maxItems: (max) =>
+      `должен содержать не больше ${max} ${plural(max, "элемента", "элементов", "элементов")}`,
+    oneOf: (values) => `должен быть одним из: ${values}`,
+    unsupported: "имеет неподдерживаемый тип или значение",
   },
 
   output: {

@@ -1,5 +1,5 @@
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { z } from "zod";
+import type { McpServer } from "../mcp/server.ts";
+import { s } from "../schema.ts";
 import { invalidInput, LolzteamError } from "../errors.ts";
 import type { ApiClient } from "../http/client.ts";
 import { messages } from "../i18n/index.ts";
@@ -22,11 +22,11 @@ export const FORUM_RATE_LIMITS = {
   post: { limit: 30, windowMs: 60_000 },
 };
 
-const id = () => z.number().int().positive();
-const page = z.number().int().min(1).max(10_000).optional();
-const limit = (max: number) => z.number().int().min(1).max(max).optional();
-const textLength = (fallback: number) => z.number().int().min(50).max(20_000).default(fallback);
-const userId = z.union([z.number().int().positive(), z.literal("me")]);
+const id = () => s.number().int().positive();
+const page = s.number().int().min(1).max(10_000).optional();
+const limit = (max: number) => s.number().int().min(1).max(max).optional();
+const textLength = (fallback: number) => s.number().int().min(50).max(20_000).default(fallback);
+const userId = s.union([s.number().int().positive(), s.literal("me")]);
 
 const SEARCH_PATHS = {
   all: "/search",
@@ -39,9 +39,9 @@ export function registerForumTools(server: McpServer, forum: ApiClient): void {
   registerTool(server, {
     name: "forum_search",
     inputSchema: {
-      query: z.string().trim().min(1).max(200).optional(),
-      type: z.enum(["all", "threads", "posts", "profile_posts"]).default("all"),
-      tag: z.string().trim().min(1).max(100).optional(),
+      query: s.string().trim().min(1).max(200).optional(),
+      type: s.enum(["all", "threads", "posts", "profile_posts"]).default("all"),
+      tag: s.string().trim().min(1).max(100).optional(),
       forum_id: id().optional(),
       user_id: id().optional(),
       page,
@@ -109,8 +109,8 @@ export function registerForumTools(server: McpServer, forum: ApiClient): void {
   registerTool(server, {
     name: "forum_list_forums",
     inputSchema: {
-      detailed: z.boolean().default(false),
-      include_prefixes: z.boolean().default(false),
+      detailed: s.boolean().default(false),
+      include_prefixes: s.boolean().default(false),
       parent_category_id: id().optional(),
       parent_forum_id: id().optional(),
     },
@@ -137,16 +137,16 @@ export function registerForumTools(server: McpServer, forum: ApiClient): void {
     name: "forum_list_threads",
     inputSchema: {
       forum_id: id().optional(),
-      title: z.string().trim().min(1).max(200).optional(),
-      title_only: z.boolean().optional(),
+      title: s.string().trim().min(1).max(200).optional(),
+      title_only: s.boolean().optional(),
       creator_user_id: id().optional(),
-      state: z.enum(["active", "closed"]).optional(),
-      period: z.enum(["day", "week", "month", "year"]).optional(),
-      sticky: z.boolean().optional(),
-      prefix_ids: z.array(z.number().int().positive()).max(20).optional(),
-      exclude_prefix_ids: z.array(z.number().int().positive()).max(20).optional(),
+      state: s.enum(["active", "closed"]).optional(),
+      period: s.enum(["day", "week", "month", "year"]).optional(),
+      sticky: s.boolean().optional(),
+      prefix_ids: s.array(s.number().int().positive()).max(20).optional(),
+      exclude_prefix_ids: s.array(s.number().int().positive()).max(20).optional(),
       tag_id: id().optional(),
-      order: z
+      order: s
         .enum([
           "post_date",
           "last_post_date",
@@ -156,7 +156,7 @@ export function registerForumTools(server: McpServer, forum: ApiClient): void {
           "vote_count",
         ])
         .optional(),
-      direction: z.enum(["asc", "desc"]).optional(),
+      direction: s.enum(["asc", "desc"]).optional(),
       page,
       limit: limit(100),
       text_length: textLength(300),
@@ -204,7 +204,7 @@ export function registerForumTools(server: McpServer, forum: ApiClient): void {
     name: "forum_get_thread",
     inputSchema: {
       thread_id: id(),
-      include_poll: z.boolean().default(false),
+      include_poll: s.boolean().default(false),
       text_length: textLength(8_000),
     },
     handler: async (args, { signal }) => {
@@ -224,7 +224,7 @@ export function registerForumTools(server: McpServer, forum: ApiClient): void {
     inputSchema: {
       thread_id: id().optional(),
       page_of_post_id: id().optional(),
-      order: z.enum(["natural", "natural_reverse", "post_likes", "post_likes_reverse"]).optional(),
+      order: s.enum(["natural", "natural_reverse", "post_likes", "post_likes_reverse"]).optional(),
       page,
       limit: limit(100),
       text_length: textLength(1_500),
@@ -318,7 +318,7 @@ export function registerForumTools(server: McpServer, forum: ApiClient): void {
   registerTool(server, {
     name: "forum_find_users",
     inputSchema: {
-      username: z.string().trim().min(1).max(50),
+      username: s.string().trim().min(1).max(50),
     },
     handler: async (args, { signal }) => {
       const response = await forum.request({
@@ -360,7 +360,7 @@ export function registerForumTools(server: McpServer, forum: ApiClient): void {
   registerTool(server, {
     name: "forum_find_tags",
     inputSchema: {
-      query: z.string().trim().min(1).max(100).optional(),
+      query: s.string().trim().min(1).max(100).optional(),
     },
     handler: async (args, { signal }) => {
       if (args.query === undefined) {

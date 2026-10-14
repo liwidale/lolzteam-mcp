@@ -2,9 +2,9 @@
 import { homedir } from "node:os";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { ConfigError, loadConfig } from "./config.ts";
 import { messages, setLocale } from "./i18n/index.ts";
+import { StdioTransport } from "./mcp/stdio.ts";
 import { createServer, createServices } from "./server.ts";
 import { runSetup } from "./setup/index.ts";
 import { createTerminal } from "./setup/terminal.ts";
@@ -34,7 +34,7 @@ async function serve(): Promise<void> {
   process.on("SIGINT", shutdown);
   process.on("SIGTERM", shutdown);
 
-  await server.connect(new StdioServerTransport());
+  await server.connect(new StdioTransport());
   process.stderr.write(`${messages.startup.running(VERSION)}\n`);
 }
 

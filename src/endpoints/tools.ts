@@ -1,5 +1,5 @@
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { z } from "zod";
+import type { McpServer } from "../mcp/server.ts";
+import { s } from "../schema.ts";
 import type { ApiClient } from "../http/client.ts";
 import { messages } from "../i18n/index.ts";
 import { registerTool } from "../tool.ts";
@@ -12,16 +12,16 @@ const SERVICES = ["forum", "market"] as const;
 const MARKET_SEARCH = /^Category\.(?!List$|Params$|Games$)|^Managing\.Get$/;
 const RESULT_LIMITS: SanitizeLimits = { maxDepth: 6, maxEntries: 100, maxString: 2_000 };
 
-const paramValue = z.union([
-  z.string().max(500),
-  z.number(),
-  z.boolean(),
-  z.array(z.union([z.string().max(200), z.number()])).max(250),
-  z.record(z.string(), z.union([z.string().max(200), z.number()])),
+const paramValue = s.union([
+  s.string().max(500),
+  s.number(),
+  s.boolean(),
+  s.array(s.union([s.string().max(200), s.number()])).max(250),
+  s.record(s.string(), s.union([s.string().max(200), s.number()])),
 ]);
 
-const service = z.enum(SERVICES);
-const operation = z.string().trim().min(1).max(100);
+const service = s.enum(SERVICES);
+const operation = s.string().trim().min(1).max(100);
 
 export function bucketFor(target: Service, id: string, endpoint: Endpoint): string {
   if (endpoint.method !== "GET") return "post";
@@ -46,7 +46,7 @@ export function registerEndpointTools(
     name: "api_list_endpoints",
     inputSchema: {
       service: service.optional(),
-      query: z.string().trim().min(1).max(100).optional(),
+      query: s.string().trim().min(1).max(100).optional(),
     },
     handler: (args) => {
       const targets = args.service ? [args.service] : SERVICES;
@@ -106,8 +106,8 @@ export function registerEndpointTools(
     inputSchema: {
       service,
       operation,
-      params: z.record(z.string().min(1).max(100), paramValue).default({}),
-      max_chars: z.number().int().min(1_000).max(100_000).default(30_000),
+      params: s.record(s.string().min(1).max(100), paramValue).default({}),
+      max_chars: s.number().int().min(1_000).max(100_000).default(30_000),
     },
     handler: async (args, { signal }) => {
       const [id, endpoint] = findEndpoint(args.service, args.operation);
