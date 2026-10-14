@@ -12,7 +12,7 @@
 
 <p align="center">English · <a href="README.ru.md">Русский</a></p>
 
-An AI assistant cannot read LOLZTEAM or LZT Market on its own: the content sits behind authenticated APIs with their own parameters, pagination and rate limits. LOLZTEAM MCP wraps the official Forum and Market APIs in 21 read-only tools that any client supporting the Model Context Protocol can call. The assistant can search threads and posts, follow a discussion page by page, look up users, search Market listings with category filters, open a listing and check its seller. Results come back as compact JSON with links to the original pages.
+An AI assistant cannot read LOLZTEAM or LZT Market on its own: the content sits behind authenticated APIs with their own parameters, pagination and rate limits. LOLZTEAM MCP wraps the official Forum and Market APIs in 24 read-only tools that any client supporting the Model Context Protocol can call. The assistant can search threads and posts, follow a discussion page by page, look up users, search Market listings with category filters, open a listing and check its seller. Results come back as compact JSON with links to the original pages. The endpoint catalog is generated from the official OpenAPI documents, so new API methods and parameters become available without new code.
 
 ## Contents
 
@@ -50,6 +50,7 @@ The server is now at `dist/index.js`. It talks to your AI client over standard i
 - **Listing and seller checks.** Open one listing with its attributes, guarantee and seller statistics, read the seller's feedback and estimate a Steam inventory.
 - **Context-friendly output.** Every tool returns compact JSON without permission flags or HTML duplicates. Long texts are cut at a limit you control and marked as truncated.
 - **Links back to the source.** Threads, posts, users and listings include their URL on the site whenever the API provides one.
+- **Every read-only endpoint, kept current.** Three universal tools reach all 113 read-only endpoints of both APIs, including the ones without a dedicated tool. A daily workflow pulls the official OpenAPI documents and opens a pull request when the API changes.
 - **Read-only by design.** The server never posts, edits, buys, sells or changes settings. No tool can.
 - **Predictable errors.** Failures come back as a structured error with a code, the API message, a hint and, for rate limits, how long to wait.
 
@@ -95,7 +96,7 @@ claude mcp add --transport stdio --env LOLZTEAM_TOKEN=your-token lolzteam -- nod
 }
 ```
 
-Restart the client after editing its configuration. The 21 tools appear under the `lolzteam` server.
+Restart the client after editing its configuration. The 24 tools appear under the `lolzteam` server.
 
 ### 3. Ask something
 
@@ -154,6 +155,28 @@ Category-specific filters go into the `filters` object under their API names. Ca
 Array filters accept a list. Filters such as `hours_played` accept an object like `{"730": 100}`. Yes or no filters accept `yes`, `no` or `nomatter`. Unknown filter names and values outside the documented list are rejected before any request is sent.
 
 Search results contain the main fields of each listing: price, origin, guarantee, seller statistics with feedback totals, link and a short description. Set `include_attributes` to also get the category-specific attributes, such as Steam level, games, bans and inventory values. `market_get_item` always returns all of them, with dates converted to ISO 8601.
+
+### Universal tools
+
+These tools cover every read-only endpoint in the generated catalog, including endpoints added to the API after this release.
+
+| Tool                    | What it does                                                                     | Key parameters                                |
+| ----------------------- | -------------------------------------------------------------------------------- | --------------------------------------------- |
+| `api_list_endpoints`    | Lists the available endpoints of one or both APIs, optionally filtered by words. | `service`, `query`                            |
+| `api_describe_endpoint` | Parameters of one endpoint with types, allowed values and descriptions.          | `service`, `operation`                        |
+| `api_call_endpoint`     | Calls one endpoint with validated parameters and returns the cleaned response.   | `service`, `operation`, `params`, `max_chars` |
+
+The assistant uses them when no dedicated tool fits, for example to read a user's trophies, a feedback comment thread or recent threads across the forum:
+
+```json
+{
+  "service": "forum",
+  "operation": "Users.Trophies",
+  "params": { "user_id": 1 }
+}
+```
+
+Parameters are checked against the official documentation before the request is sent: unknown names, wrong types, values outside the documented list and missing required parameters are rejected. Responses pass through the same cleanup as the other tools. Credentials, private account fields, permission flags and HTML duplicates are removed. A response larger than `max_chars` comes back as a preview with a hint to narrow the request.
 
 ### Pagination
 
@@ -228,7 +251,7 @@ The Market documentation also mentions a stricter limit of 20 category searches 
 
 ## Security
 
-- **Read-only surface.** The server calls only documented read endpoints and the forum search endpoints. It has no code path that posts, edits, deletes, buys, sells, transfers money or changes settings.
+- **Read-only surface.** The server calls only documented read endpoints, the forum search endpoints and the bulk listing lookup, all filtered by the policy described in [Keeping up with API changes](#keeping-up-with-api-changes). It has no code path that posts, edits, deletes, buys, sells, transfers money or changes settings.
 - **Secrets stay out of results.** The token is sent only in the `Authorization` header to the configured API host. It never appears in tool results or logs, and API error messages that echo it are redacted.
 - **Sensitive listing data is removed.** Market results drop fields with login data, passwords, cookies, `.mafile` data, email codes, phone numbers, private notes and buyer information, even when the token's account could see them.
 - **Private profile data is not exposed.** Forum user results contain public profile fields only, never balances, email or secret answers, even for `me`.
@@ -271,20 +294,38 @@ npm run format:check
 npm run build
 ```
 
-Tests use the built-in Node.js test runner and a fake `fetch`, so they never touch the real APIs and need no token. They cover configuration, the HTTP client with retries, rate limits and error mapping, Market filter validation and every tool through a real MCP client connection.
+Tests use the built-in Node.js test runner and a fake `fetch`, so they never touch the real APIs and need no token. They cover configuration, the HTTP client with retries, rate limits and error mapping, catalog generation and the read-only policy, parameter validation and every tool through a real MCP client connection. One test fails when the generated catalogs no longer match the OpenAPI documents in `openapi/`.
 
-The Market filter catalog in `src/market/catalog.generated.ts` is generated from the official OpenAPI document. Regenerate it when the API changes:
+### Keeping up with API changes
+
+The official OpenAPI documents live in `openapi/`. `npm run generate` turns them into the endpoint catalogs in `src/endpoints/forum.generated.ts` and `src/endpoints/market.generated.ts`. The universal tools and the Market category filters read these catalogs, so a new endpoint, parameter or filter needs no code. The dedicated tools keep their hand-picked parameters, and anything new is reachable through the universal tools right away.
+
+To update by hand, download the latest documents and regenerate:
 
 ```bash
-npm run catalog
+npm run sync
 ```
 
-Pass a local file path to use a downloaded copy of the document instead.
+The command prints a report of added, changed and removed endpoints, plus new operations the read-only policy excluded.
+
+The `Sync API` workflow does the same every day at 06:00 UTC. When the documents change, it runs the checks and opens or updates the `api-sync` pull request with the report and the check results. Review it and merge. Pull the change and run `npm run build` to use it.
+
+The workflow needs **Allow GitHub Actions to create and approve pull requests** enabled under **Settings** > **Actions** > **General**.
+
+Endpoints get into the catalog only if `src/endpoints/policy.ts` allows them:
+
+- Only `GET` requests, plus the documented search endpoints and the bulk listing lookup. Every other method can change data and is excluded.
+- No endpoints that need the private `conversate`, `payment` or `invoice` scopes.
+- No endpoints whose path points to credentials, such as `.mafile`, email codes, letters, passwords or proxies.
+- No endpoints whose documentation warns about side effects, such as cancelling an account guarantee.
+- No endpoints that return the token owner's private account data, such as `/users/me` with its balance and email.
+
+A new endpoint that matches none of these rules appears in the pull request under **Added endpoints**. That is the moment to check that it is safe to expose.
 
 ## How it works
 
 1. Your MCP client starts the server and lists its tools over stdio.
-2. When the assistant calls a tool, the arguments are validated with Zod. Market filters are also checked against the catalog generated from the official documentation.
+2. When the assistant calls a tool, the arguments are validated with Zod and checked against the endpoint catalog generated from the official OpenAPI documents.
 3. The HTTP client waits for a free slot in the local rate limit bucket, sends the request with the bearer token and a timeout and retries rate limits, server errors and network failures with backoff.
 4. The response is reduced to the fields that matter, texts are cleaned and truncated, and the result goes back to the assistant as JSON.
 
@@ -298,13 +339,16 @@ src/
   server.ts                 MCP server, instructions and API clients
   config.ts                 Environment variables and validation
   tool.ts                   Tool registration, results and error format
+  endpoints/                Generated endpoint catalogs, read-only policy, universal tools
   http/                     HTTP client, query encoding and rate limiter
   forum/                    Forum tools and response formatting
-  market/                   Market tools, formatting and filter catalog
-  util/                     JSON access and text cleanup helpers
+  market/                   Market tools, formatting and category filters
+  util/                     JSON access, text cleanup and response sanitizing
+openapi/                    Official OpenAPI documents of both APIs
 scripts/
-  generate-market-catalog.ts  Builds the filter catalog from the OpenAPI document
-  smoke.ts                    Live check with a real token
+  catalog.ts                Builds endpoint catalogs from OpenAPI documents
+  generate.ts               Downloads documents, writes catalogs, prints the change report
+  smoke.ts                  Live check with a real token
 test/                       Unit and integration tests
 ```
 
