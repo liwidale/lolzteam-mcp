@@ -109,36 +109,36 @@ claude mcp add --transport stdio --env LOLZTEAM_TOKEN=your-token lolzteam -- nod
 
 ### Инструменты форума
 
-| Инструмент                  | Что делает                                                      | Основные параметры                                                                                              |
-| --------------------------- | --------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `forum_search`              | Полнотекстовый поиск по темам, сообщениям и записям в профилях. | `query`, `type` (`all`, `threads`, `posts`, `profile_posts`), `tag`, `forum_id`, `user_id`, `page`, `limit`     |
-| `forum_list_categories`     | Список категорий верхнего уровня.                               | `parent_category_id`, `parent_forum_id`                                                                         |
-| `forum_list_forums`         | Разделы форума с ID, числом тем и префиксами.                   | `parent_category_id`, `parent_forum_id`                                                                         |
-| `forum_list_threads`        | Темы раздела с фильтрами и сортировкой.                         | `forum_id`, `title`, `creator_user_id`, `prefix_ids`, `tag_id`, `period`, `order`, `direction`, `page`, `limit` |
-| `forum_get_thread`          | Одна тема с полным первым сообщением и, по желанию, опросом.    | `thread_id`, `include_poll`                                                                                     |
-| `forum_list_posts`          | Сообщения темы постранично.                                     | `thread_id`, `page_of_post_id`, `order`, `page`, `limit`                                                        |
-| `forum_get_post`            | Одно сообщение с полным текстом.                                | `post_id`                                                                                                       |
-| `forum_list_post_comments`  | Комментарии к сообщению.                                        | `post_id`, `before_comment_id`                                                                                  |
-| `forum_get_user`            | Публичный профиль пользователя.                                 | `user_id` (число или `me`)                                                                                      |
-| `forum_find_users`          | Пользователи, чьё имя начинается с заданного текста.            | `username`                                                                                                      |
-| `forum_list_user_content`   | Темы и сообщения пользователя.                                  | `user_id`, `page`, `limit`                                                                                      |
-| `forum_find_tags`           | Теги по началу слова или популярные теги.                       | `query`                                                                                                         |
-| `forum_list_tagged_threads` | Темы с тегом.                                                   | `tag_id`, `page`, `limit`                                                                                       |
+| Инструмент                  | Что делает                                                                | Основные параметры                                                                                              |
+| --------------------------- | ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `forum_search`              | Полнотекстовый поиск по темам, сообщениям и записям в профилях.           | `query`, `type` (`all`, `threads`, `posts`, `profile_posts`), `tag`, `forum_id`, `user_id`, `page`, `limit`     |
+| `forum_list_categories`     | Список категорий верхнего уровня.                                         | `parent_category_id`, `parent_forum_id`                                                                         |
+| `forum_list_forums`         | Разделы форума с ID и числом тем. Описания, ссылки и префиксы по запросу. | `parent_category_id`, `parent_forum_id`, `detailed`, `include_prefixes`                                         |
+| `forum_list_threads`        | Темы раздела с фильтрами и сортировкой.                                   | `forum_id`, `title`, `creator_user_id`, `prefix_ids`, `tag_id`, `period`, `order`, `direction`, `page`, `limit` |
+| `forum_get_thread`          | Одна тема с полным первым сообщением и, по желанию, опросом.              | `thread_id`, `include_poll`                                                                                     |
+| `forum_list_posts`          | Сообщения темы постранично.                                               | `thread_id`, `page_of_post_id`, `order`, `page`, `limit`                                                        |
+| `forum_get_post`            | Одно сообщение с полным текстом.                                          | `post_id`                                                                                                       |
+| `forum_list_post_comments`  | Комментарии к сообщению.                                                  | `post_id`, `before_comment_id`                                                                                  |
+| `forum_get_user`            | Публичный профиль пользователя.                                           | `user_id` (число или `me`)                                                                                      |
+| `forum_find_users`          | Пользователи, чьё имя начинается с заданного текста.                      | `username`                                                                                                      |
+| `forum_list_user_content`   | Темы и сообщения пользователя.                                            | `user_id`, `page`, `limit`                                                                                      |
+| `forum_find_tags`           | Теги по началу слова или популярные теги.                                 | `query`                                                                                                         |
+| `forum_list_tagged_threads` | Темы с тегом.                                                             | `tag_id`, `page`, `limit`                                                                                       |
 
 Инструменты, которые возвращают текст сообщений, принимают `text_length`, максимальное число символов на элемент. Текст сверх лимита заменяется пометкой `[truncated, N more characters]`, поэтому ассистент знает, что полный текст можно получить отдельно.
 
 ### Инструменты маркета
 
-| Инструмент                         | Что делает                                                              | Основные параметры                                                                                                                                     |
-| ---------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `market_search`                    | Поиск объявлений в одной категории или во всех.                         | `category`, `title`, `min_price`, `max_price`, `currency`, `order_by`, `origin`, `exclude_origin`, `seller_id`, `not_sold_before`, `filters`, `cursor` |
-| `market_get_item`                  | Полная информация об объявлении.                                        | `item_id`, `description_length`                                                                                                                        |
-| `market_get_category_filters`      | Фильтры категории с типами и допустимыми значениями. Работает без сети. | `category`                                                                                                                                             |
-| `market_list_categories`           | Категории маркета по данным API.                                        | нет                                                                                                                                                    |
-| `market_list_category_games`       | Игры категории и их ID для фильтров по играм.                           | `category`                                                                                                                                             |
-| `market_get_seller_feedback`       | Отзывы покупателей о продавце с числом положительных и отрицательных.   | `seller_id`, `type`, `category_id`, `exclude_automatic`, `page`, `limit`                                                                               |
-| `market_get_steam_inventory_value` | Оценка инвентаря Steam объявления для одной игры.                       | `item_id`, `app_id`, `currency`                                                                                                                        |
-| `market_list_currencies`           | Поддерживаемые валюты и курсы.                                          | нет                                                                                                                                                    |
+| Инструмент                         | Что делает                                                              | Основные параметры                                                                                                                                                           |
+| ---------------------------------- | ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `market_search`                    | Поиск объявлений в одной категории или во всех.                         | `category`, `title`, `min_price`, `max_price`, `currency`, `order_by`, `origin`, `exclude_origin`, `seller_id`, `not_sold_before`, `filters`, `include_attributes`, `cursor` |
+| `market_get_item`                  | Полная информация об объявлении.                                        | `item_id`, `description_length`                                                                                                                                              |
+| `market_get_category_filters`      | Фильтры категории с типами и допустимыми значениями. Работает без сети. | `category`                                                                                                                                                                   |
+| `market_list_categories`           | Категории маркета по данным API.                                        | нет                                                                                                                                                                          |
+| `market_list_category_games`       | Поиск игр категории и их ID для фильтров по играм.                      | `category`, `query`, `limit`                                                                                                                                                 |
+| `market_get_seller_feedback`       | Отзывы покупателей о продавце с числом положительных и отрицательных.   | `seller_id`, `type`, `category_id`, `exclude_automatic`, `page`, `limit`                                                                                                     |
+| `market_get_steam_inventory_value` | Оценка инвентаря Steam объявления для одной игры.                       | `item_id`, `app_id`, `currency`                                                                                                                                              |
+| `market_list_currencies`           | Поддерживаемые валюты и курсы.                                          | нет                                                                                                                                                                          |
 
 Фильтры конкретной категории передаются в объекте `filters` под их именами из API. Сначала вызовите `market_get_category_filters`, чтобы увидеть их. Например, поиск аккаунтов Steam с CS2 без VAC-бана и с файлом Steam Guard:
 
@@ -152,6 +152,8 @@ claude mcp add --transport stdio --env LOLZTEAM_TOKEN=your-token lolzteam -- nod
 ```
 
 Фильтры-массивы принимают список. Фильтры вроде `hours_played` принимают объект вида `{"730": 100}`. Фильтры «да или нет» принимают `yes`, `no` или `nomatter`. Неизвестные фильтры и значения вне документированного списка отклоняются до отправки запроса.
+
+Результаты поиска содержат основные поля объявления: цену, происхождение, гарантию, статистику продавца с суммой отзывов, ссылку и короткое описание. Включите `include_attributes`, чтобы получить и атрибуты категории, например уровень Steam, игры, баны и стоимость инвентаря. `market_get_item` всегда возвращает их все, а даты переводит в ISO 8601.
 
 ### Пагинация
 

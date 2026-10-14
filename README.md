@@ -109,36 +109,36 @@ All tools are read-only and marked with the MCP `readOnlyHint` annotation. Optio
 
 ### Forum tools
 
-| Tool                        | What it does                                                   | Key parameters                                                                                                  |
-| --------------------------- | -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `forum_search`              | Full-text search across threads, posts and profile posts.      | `query`, `type` (`all`, `threads`, `posts`, `profile_posts`), `tag`, `forum_id`, `user_id`, `page`, `limit`     |
-| `forum_list_categories`     | Lists top-level forum categories.                              | `parent_category_id`, `parent_forum_id`                                                                         |
-| `forum_list_forums`         | Lists forum sections with IDs, thread counts and prefixes.     | `parent_category_id`, `parent_forum_id`                                                                         |
-| `forum_list_threads`        | Lists threads of a section with filters and sorting.           | `forum_id`, `title`, `creator_user_id`, `prefix_ids`, `tag_id`, `period`, `order`, `direction`, `page`, `limit` |
-| `forum_get_thread`          | One thread with the full first post and, optionally, its poll. | `thread_id`, `include_poll`                                                                                     |
-| `forum_list_posts`          | Posts of a thread, page by page.                               | `thread_id`, `page_of_post_id`, `order`, `page`, `limit`                                                        |
-| `forum_get_post`            | One post with its full text.                                   | `post_id`                                                                                                       |
-| `forum_list_post_comments`  | Comments under a post.                                         | `post_id`, `before_comment_id`                                                                                  |
-| `forum_get_user`            | Public profile of a user.                                      | `user_id` (a number or `me`)                                                                                    |
-| `forum_find_users`          | Users whose name starts with the given text.                   | `username`                                                                                                      |
-| `forum_list_user_content`   | Threads and posts created by a user.                           | `user_id`, `page`, `limit`                                                                                      |
-| `forum_find_tags`           | Tags by prefix, or the popular tags.                           | `query`                                                                                                         |
-| `forum_list_tagged_threads` | Threads with a tag.                                            | `tag_id`, `page`, `limit`                                                                                       |
+| Tool                        | What it does                                                                                         | Key parameters                                                                                                  |
+| --------------------------- | ---------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `forum_search`              | Full-text search across threads, posts and profile posts.                                            | `query`, `type` (`all`, `threads`, `posts`, `profile_posts`), `tag`, `forum_id`, `user_id`, `page`, `limit`     |
+| `forum_list_categories`     | Lists top-level forum categories.                                                                    | `parent_category_id`, `parent_forum_id`                                                                         |
+| `forum_list_forums`         | Lists forum sections with IDs and thread counts. Descriptions, links and thread prefixes on request. | `parent_category_id`, `parent_forum_id`, `detailed`, `include_prefixes`                                         |
+| `forum_list_threads`        | Lists threads of a section with filters and sorting.                                                 | `forum_id`, `title`, `creator_user_id`, `prefix_ids`, `tag_id`, `period`, `order`, `direction`, `page`, `limit` |
+| `forum_get_thread`          | One thread with the full first post and, optionally, its poll.                                       | `thread_id`, `include_poll`                                                                                     |
+| `forum_list_posts`          | Posts of a thread, page by page.                                                                     | `thread_id`, `page_of_post_id`, `order`, `page`, `limit`                                                        |
+| `forum_get_post`            | One post with its full text.                                                                         | `post_id`                                                                                                       |
+| `forum_list_post_comments`  | Comments under a post.                                                                               | `post_id`, `before_comment_id`                                                                                  |
+| `forum_get_user`            | Public profile of a user.                                                                            | `user_id` (a number or `me`)                                                                                    |
+| `forum_find_users`          | Users whose name starts with the given text.                                                         | `username`                                                                                                      |
+| `forum_list_user_content`   | Threads and posts created by a user.                                                                 | `user_id`, `page`, `limit`                                                                                      |
+| `forum_find_tags`           | Tags by prefix, or the popular tags.                                                                 | `query`                                                                                                         |
+| `forum_list_tagged_threads` | Threads with a tag.                                                                                  | `tag_id`, `page`, `limit`                                                                                       |
 
 Tools that return message text accept `text_length`, the maximum number of characters per item. Text beyond the limit is replaced with a `[truncated, N more characters]` marker, so the assistant knows to fetch the full post when it matters.
 
 ### Market tools
 
-| Tool                               | What it does                                                               | Key parameters                                                                                                                                         |
-| ---------------------------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `market_search`                    | Searches listings in one category or across all of them.                   | `category`, `title`, `min_price`, `max_price`, `currency`, `order_by`, `origin`, `exclude_origin`, `seller_id`, `not_sold_before`, `filters`, `cursor` |
-| `market_get_item`                  | Full details of one listing.                                               | `item_id`, `description_length`                                                                                                                        |
-| `market_get_category_filters`      | Filters a category supports, with types and allowed values. Works offline. | `category`                                                                                                                                             |
-| `market_list_categories`           | Market categories as reported by the API.                                  | none                                                                                                                                                   |
-| `market_list_category_games`       | Games of a category and their IDs for game filters.                        | `category`                                                                                                                                             |
-| `market_get_seller_feedback`       | Buyer feedback for a seller with positive and negative totals.             | `seller_id`, `type`, `category_id`, `exclude_automatic`, `page`, `limit`                                                                               |
-| `market_get_steam_inventory_value` | Estimated Steam inventory value of a listing for one game.                 | `item_id`, `app_id`, `currency`                                                                                                                        |
-| `market_list_currencies`           | Supported currencies and exchange rates.                                   | none                                                                                                                                                   |
+| Tool                               | What it does                                                               | Key parameters                                                                                                                                                               |
+| ---------------------------------- | -------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `market_search`                    | Searches listings in one category or across all of them.                   | `category`, `title`, `min_price`, `max_price`, `currency`, `order_by`, `origin`, `exclude_origin`, `seller_id`, `not_sold_before`, `filters`, `include_attributes`, `cursor` |
+| `market_get_item`                  | Full details of one listing.                                               | `item_id`, `description_length`                                                                                                                                              |
+| `market_get_category_filters`      | Filters a category supports, with types and allowed values. Works offline. | `category`                                                                                                                                                                   |
+| `market_list_categories`           | Market categories as reported by the API.                                  | none                                                                                                                                                                         |
+| `market_list_category_games`       | Finds games of a category and their IDs for game filters.                  | `category`, `query`, `limit`                                                                                                                                                 |
+| `market_get_seller_feedback`       | Buyer feedback for a seller with positive and negative totals.             | `seller_id`, `type`, `category_id`, `exclude_automatic`, `page`, `limit`                                                                                                     |
+| `market_get_steam_inventory_value` | Estimated Steam inventory value of a listing for one game.                 | `item_id`, `app_id`, `currency`                                                                                                                                              |
+| `market_list_currencies`           | Supported currencies and exchange rates.                                   | none                                                                                                                                                                         |
 
 Category-specific filters go into the `filters` object under their API names. Call `market_get_category_filters` first to see them. For example, a Steam search for CS2 accounts without a VAC ban that have a Steam Guard file:
 
@@ -152,6 +152,8 @@ Category-specific filters go into the `filters` object under their API names. Ca
 ```
 
 Array filters accept a list. Filters such as `hours_played` accept an object like `{"730": 100}`. Yes or no filters accept `yes`, `no` or `nomatter`. Unknown filter names and values outside the documented list are rejected before any request is sent.
+
+Search results contain the main fields of each listing: price, origin, guarantee, seller statistics with feedback totals, link and a short description. Set `include_attributes` to also get the category-specific attributes, such as Steam level, games, bans and inventory values. `market_get_item` always returns all of them, with dates converted to ISO 8601.
 
 ### Pagination
 
