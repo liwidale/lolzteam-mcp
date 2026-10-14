@@ -416,7 +416,7 @@ Releases are published from GitHub Actions through npm trusted publishing, so th
 2. Add a `## 1.0.1` section to `CHANGELOG.md` with `### Added`, `### Improved` or `### Fixed` notes. The workflow turns it into the release notes.
 3. Commit with `{ゝ} Released v1.0.1`, create the tag with `git tag v1.0.1` and push both with `git push origin main --tags`.
 
-The `Release` workflow checks that the tag matches `package.json`, runs every check, publishes the package to npm with provenance and creates the GitHub release. When the version is already on npm, it skips publishing and only creates the release.
+The `Release` workflow checks that the tag matches `package.json` and runs every check. It then publishes the package to npm with provenance, publishes the same build to GitHub Packages as `@liwidale/lolzteam-mcp` and creates the GitHub release. Each step skips what already exists, so you can also start the workflow by hand from the **Actions** tab to finish an interrupted release.
 
 ### Keeping up with API changes
 
