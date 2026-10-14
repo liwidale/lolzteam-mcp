@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.2
+
+### Improved
+
+- The package no longer has dependencies. Installing it adds only its own code instead of about a hundred third-party packages, which makes installation faster and removes dependency alerts in security scanners.
+- Invalid tool arguments now come back as a regular `invalid_input` error with every problem listed, in English or Russian.
+
 ## 1.0.1
 
 ### Improved
