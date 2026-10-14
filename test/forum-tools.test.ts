@@ -303,8 +303,8 @@ describe("forum tools", () => {
     await close();
   });
 
-  it("forum_list_tagged_threads and forum_list_forums format their lists", async () => {
-    const { call, close } = await connect(
+  it("forum_list_tagged_threads, forum_list_forums and forum_list_categories format their lists", async () => {
+    const { call, requests, close } = await connect(
       route({
         "GET /tags/10": () =>
           json({
@@ -317,6 +317,18 @@ describe("forum tools", () => {
             tagged: [thread],
             tagged_total: 99,
             links: { pages: 5, page: 2 },
+          }),
+        "GET /categories": () =>
+          json({
+            categories: [
+              {
+                category_id: 2,
+                category_title: "Games",
+                category_description: "",
+                links: { permalink: "https://lolz.live/categories/2/" },
+              },
+            ],
+            categories_total: 1,
           }),
         "GET /forums": () =>
           json({
@@ -348,6 +360,12 @@ describe("forum tools", () => {
       { prefix_id: 3, title: "Guide", group: "Type" },
     ]);
     assert.equal(forums.data.forums[0].description, "All about Steam");
+    const categories = await call("forum_list_categories", { parent_category_id: 1 });
+    assert.equal(requests.at(-1)?.url.searchParams.get("parent_category_id"), "1");
+    assert.deepEqual(categories.data, {
+      categories: [{ category_id: 2, title: "Games", url: "https://lolz.live/categories/2/" }],
+      total: 1,
+    });
     await close();
   });
 
