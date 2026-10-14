@@ -8,7 +8,7 @@ export interface Environment {
 }
 
 export interface Client {
-  id: "claude-desktop" | "cursor" | "windsurf";
+  id: "claude-desktop" | "cursor" | "windsurf" | "antigravity";
   name: string;
   configPath: string;
 }
@@ -44,6 +44,11 @@ export function knownClients(environment: Environment): Client[] {
       id: "windsurf",
       name: "Windsurf",
       configPath: join(home, ".codeium", "windsurf", "mcp_config.json"),
+    },
+    {
+      id: "antigravity",
+      name: "Antigravity",
+      configPath: join(home, ".gemini", "config", "mcp_config.json"),
     },
   ];
 }

@@ -75,7 +75,7 @@ The command downloads the latest version and then:
 
 1. Asks for the token. The input stays hidden.
 2. Checks the token against both APIs and shows the account it belongs to. A rejected token stops the setup before anything changes.
-3. Finds the installed MCP clients: Claude Desktop, Cursor and Windsurf.
+3. Finds the installed MCP clients: Claude Desktop, Cursor, Windsurf and Antigravity.
 4. Asks which of them to configure. Press `Enter` to configure all of them.
 5. Adds the `lolzteam` server to each configuration file. Other servers and settings stay as they are, and the previous file is saved next to it with a `.bak` extension.
 6. Prints the command for Claude Code.
@@ -108,11 +108,11 @@ The setup speaks the language of your system. Run it with `LOLZTEAM_LOCALE=en` o
 
 #### Setup options
 
-| Option           | Effect                                                                                                                                                                               |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `--yes`          | Configures every detected client without asking.                                                                                                                                     |
-| `--client <id>`  | Configures only this client: `claude-desktop`, `cursor` or `windsurf`. Repeat it for several clients. Use it when a client has never been started and its folder does not exist yet. |
-| `LOLZTEAM_TOKEN` | Environment variable with the token. The setup uses it instead of asking, which lets it run in scripts.                                                                              |
+| Option           | Effect                                                                                                                                                                                              |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--yes`          | Configures every detected client without asking.                                                                                                                                                    |
+| `--client <id>`  | Configures only this client: `claude-desktop`, `cursor`, `windsurf` or `antigravity`. Repeat it for several clients. Use it when a client has never been started and its folder does not exist yet. |
+| `LOLZTEAM_TOKEN` | Environment variable with the token. The setup uses it instead of asking, which lets it run in scripts.                                                                                             |
 
 For example, to configure only Cursor without questions on macOS or Linux:
 
@@ -140,6 +140,7 @@ Use this when the setup command fails, when your client is not in its list or wh
    | Claude Desktop | `%APPDATA%\Claude\claude_desktop_config.json`     | `~/Library/Application Support/Claude/claude_desktop_config.json` | `~/.config/Claude/claude_desktop_config.json` |
    | Cursor         | `%USERPROFILE%\.cursor\mcp.json`                  | `~/.cursor/mcp.json`                                              | `~/.cursor/mcp.json`                          |
    | Windsurf       | `%USERPROFILE%\.codeium\windsurf\mcp_config.json` | `~/.codeium/windsurf/mcp_config.json`                             | `~/.codeium/windsurf/mcp_config.json`         |
+   | Antigravity    | `%USERPROFILE%\.gemini\config\mcp_config.json`    | `~/.gemini/config/mcp_config.json`                                | `~/.gemini/config/mcp_config.json`            |
 
    Other clients describe the location in their documentation. Look for the `mcpServers` setting.
 

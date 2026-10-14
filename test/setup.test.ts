@@ -105,6 +105,12 @@ describe("client configuration files", () => {
       paths("linux").windsurf,
       join("/home/u", ".codeium", "windsurf", "mcp_config.json"),
     );
+    for (const platform of ["linux", "darwin", "win32"] as const) {
+      assert.equal(
+        paths(platform).antigravity,
+        join("/home/u", ".gemini", "config", "mcp_config.json"),
+      );
+    }
   });
 
   it("detects only the clients that are installed", async () => {
@@ -113,6 +119,17 @@ describe("client configuration files", () => {
     assert.deepEqual(
       found.map((client) => client.id),
       ["cursor"],
+    );
+  });
+
+  it("detects Antigravity by its configuration folder", async () => {
+    await mkdir(join(root, "home", ".gemini", "antigravity"), { recursive: true });
+    assert.deepEqual(await detectClients(environment()), []);
+    await mkdir(join(root, "home", ".gemini", "config"), { recursive: true });
+    const found = await detectClients(environment());
+    assert.deepEqual(
+      found.map((client) => [client.id, client.name]),
+      [["antigravity", "Antigravity"]],
     );
   });
 
@@ -220,6 +237,12 @@ describe("setup command", () => {
     assert.equal(code, 0);
     assert.ok(
       (await readConfig(join(root, "home", ".codeium", "windsurf", "mcp_config.json"))).mcpServers
+        .lolzteam,
+    );
+    const antigravity = await setup({ clients: ["antigravity"] }, [TEST_TOKEN]);
+    assert.equal(antigravity.code, 0);
+    assert.ok(
+      (await readConfig(join(root, "home", ".gemini", "config", "mcp_config.json"))).mcpServers
         .lolzteam,
     );
     const unknown = await setup({ clients: ["vim"] }, [TEST_TOKEN]);
