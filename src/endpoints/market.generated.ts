@@ -1,7 +1,7 @@
 import type { EndpointCatalog } from "./types.ts";
 
 export const marketCatalog: EndpointCatalog = {
-  "version": "1.1.105",
+  "version": "1.1.106",
   "endpoints": {
     "Category.All": {
       "method": "GET",
@@ -759,7 +759,7 @@ export const marketCatalog: EndpointCatalog = {
           "type": "array",
           "description": "List of gifts.",
           "items": "string",
-          "valueCount": 4305
+          "valueCount": 4351
         },
         {
           "name": "gift_min",
@@ -791,7 +791,7 @@ export const marketCatalog: EndpointCatalog = {
           "type": "array",
           "description": "List of allowed countries.",
           "items": "string",
-          "valueCount": 155
+          "valueCount": 166
         },
         {
           "name": "not_country[]",
@@ -799,7 +799,7 @@ export const marketCatalog: EndpointCatalog = {
           "type": "array",
           "description": "List of disallowed countries.",
           "items": "string",
-          "valueCount": 155
+          "valueCount": 166
         },
         {
           "name": "cs2_profile_rank_min",
@@ -1953,68 +1953,7 @@ export const marketCatalog: EndpointCatalog = {
           "type": "array",
           "description": "List of Zenless Zone Zero characters.",
           "items": "integer",
-          "values": [
-            1011,
-            1021,
-            1031,
-            1041,
-            1051,
-            1061,
-            1071,
-            1081,
-            1091,
-            1101,
-            1111,
-            1121,
-            1131,
-            1141,
-            1151,
-            1161,
-            1171,
-            1181,
-            1191,
-            1201,
-            1211,
-            1221,
-            1241,
-            1251,
-            1261,
-            1271,
-            1281,
-            1291,
-            1301,
-            1311,
-            1321,
-            1331,
-            1341,
-            1351,
-            1361,
-            1371,
-            1381,
-            1391,
-            1401,
-            1411,
-            1421,
-            1431,
-            1441,
-            1451,
-            1461,
-            1471,
-            1481,
-            1491,
-            1501,
-            1511,
-            1521,
-            1531,
-            1541,
-            1551,
-            1561,
-            1571,
-            1581,
-            1591,
-            1611,
-            1621
-          ]
+          "valueCount": 61
         },
         {
           "name": "zenless_character_cinemas",
@@ -2607,7 +2546,7 @@ export const marketCatalog: EndpointCatalog = {
           "type": "array",
           "description": "List of allowed countries.",
           "items": "string",
-          "valueCount": 150
+          "valueCount": 155
         },
         {
           "name": "not_country[]",
@@ -2615,7 +2554,7 @@ export const marketCatalog: EndpointCatalog = {
           "type": "array",
           "description": "List of disallowed countries.",
           "items": "string",
-          "valueCount": 150
+          "valueCount": 155
         },
         {
           "name": "daybreak",
@@ -3255,7 +3194,7 @@ export const marketCatalog: EndpointCatalog = {
           "type": "array",
           "description": "List of allowed countries.",
           "items": "string",
-          "valueCount": 155
+          "valueCount": 166
         },
         {
           "name": "not_country[]",
@@ -3263,7 +3202,7 @@ export const marketCatalog: EndpointCatalog = {
           "type": "array",
           "description": "List of disallowed countries.",
           "items": "string",
-          "valueCount": 155
+          "valueCount": 166
         },
         {
           "name": "daybreak",
@@ -4565,7 +4504,7 @@ export const marketCatalog: EndpointCatalog = {
           "type": "array",
           "description": "List of allowed countries.",
           "items": "string",
-          "valueCount": 155
+          "valueCount": 166
         },
         {
           "name": "not_country[]",
@@ -4573,7 +4512,7 @@ export const marketCatalog: EndpointCatalog = {
           "type": "array",
           "description": "List of disallowed countries.",
           "items": "string",
-          "valueCount": 155
+          "valueCount": 166
         },
         {
           "name": "gmin",
@@ -5232,7 +5171,7 @@ export const marketCatalog: EndpointCatalog = {
           "type": "array",
           "description": "List of allowed countries.",
           "items": "string",
-          "valueCount": 155
+          "valueCount": 166
         },
         {
           "name": "not_country[]",
@@ -5240,7 +5179,7 @@ export const marketCatalog: EndpointCatalog = {
           "type": "array",
           "description": "List of disallowed countries.",
           "items": "string",
-          "valueCount": 155
+          "valueCount": 166
         },
         {
           "name": "clan_members_min",
@@ -6004,7 +5943,7 @@ export const marketCatalog: EndpointCatalog = {
           "type": "array",
           "description": "List of allowed countries.",
           "items": "string",
-          "valueCount": 155
+          "valueCount": 166
         },
         {
           "name": "not_country[]",
@@ -6012,7 +5951,7 @@ export const marketCatalog: EndpointCatalog = {
           "type": "array",
           "description": "List of disallowed countries.",
           "items": "string",
-          "valueCount": 155
+          "valueCount": 166
         },
         {
           "name": "daybreak",
@@ -6130,7 +6069,7 @@ export const marketCatalog: EndpointCatalog = {
           "type": "array",
           "description": "Skins.",
           "items": "string",
-          "valueCount": 3147
+          "valueCount": 3162
         },
         {
           "name": "pickaxe[]",
@@ -6138,7 +6077,7 @@ export const marketCatalog: EndpointCatalog = {
           "type": "array",
           "description": "Pickaxes.",
           "items": "string",
-          "valueCount": 2335
+          "valueCount": 2355
         },
         {
           "name": "dance[]",
@@ -6146,7 +6085,7 @@ export const marketCatalog: EndpointCatalog = {
           "type": "array",
           "description": "Dances.",
           "items": "string",
-          "valueCount": 2229
+          "valueCount": 2242
         },
         {
           "name": "glider[]",
@@ -7416,7 +7355,7 @@ export const marketCatalog: EndpointCatalog = {
           "type": "array",
           "description": "List of allowed countries.",
           "items": "string",
-          "valueCount": 155
+          "valueCount": 166
         },
         {
           "name": "not_country[]",
@@ -7424,7 +7363,7 @@ export const marketCatalog: EndpointCatalog = {
           "type": "array",
           "description": "List of disallowed countries.",
           "items": "string",
-          "valueCount": 155
+          "valueCount": 166
         },
         {
           "name": "daybreak",
@@ -8132,7 +8071,6 @@ export const marketCatalog: EndpointCatalog = {
             "es-es",
             "fi",
             "fr",
-            "he",
             "hi",
             "hr",
             "hu",
@@ -8175,7 +8113,6 @@ export const marketCatalog: EndpointCatalog = {
             "es-es",
             "fi",
             "fr",
-            "he",
             "hi",
             "hr",
             "hu",
@@ -8205,7 +8142,7 @@ export const marketCatalog: EndpointCatalog = {
           "type": "array",
           "description": "List of allowed countries.",
           "items": "string",
-          "valueCount": 154
+          "valueCount": 153
         },
         {
           "name": "not_country[]",
@@ -8213,7 +8150,7 @@ export const marketCatalog: EndpointCatalog = {
           "type": "array",
           "description": "List of disallowed countries.",
           "items": "string",
-          "valueCount": 154
+          "valueCount": 153
         },
         {
           "name": "min_servers",
@@ -9072,7 +9009,7 @@ export const marketCatalog: EndpointCatalog = {
           "type": "array",
           "description": "List of allowed countries.",
           "items": "string",
-          "valueCount": 155
+          "valueCount": 166
         },
         {
           "name": "not_country[]",
@@ -9080,7 +9017,7 @@ export const marketCatalog: EndpointCatalog = {
           "type": "array",
           "description": "List of disallowed countries.",
           "items": "string",
-          "valueCount": 155
+          "valueCount": 166
         },
         {
           "name": "cookies",
@@ -9401,7 +9338,7 @@ export const marketCatalog: EndpointCatalog = {
           "type": "array",
           "description": "List of allowed countries.",
           "items": "string",
-          "valueCount": 155
+          "valueCount": 166
         },
         {
           "name": "not_country[]",
@@ -9409,7 +9346,7 @@ export const marketCatalog: EndpointCatalog = {
           "type": "array",
           "description": "List of disallowed countries.",
           "items": "string",
-          "valueCount": 155
+          "valueCount": 166
         },
         {
           "name": "tel",
@@ -10458,7 +10395,7 @@ export const marketCatalog: EndpointCatalog = {
           "type": "array",
           "description": "List of allowed countries.",
           "items": "string",
-          "valueCount": 146
+          "valueCount": 136
         },
         {
           "name": "not_country",
@@ -10466,7 +10403,7 @@ export const marketCatalog: EndpointCatalog = {
           "type": "array",
           "description": "List of disallowed countries.",
           "items": "string",
-          "valueCount": 146
+          "valueCount": 136
         },
         {
           "name": "reg",
@@ -11424,7 +11361,7 @@ export const marketCatalog: EndpointCatalog = {
           "type": "array",
           "description": "List of allowed countries.",
           "items": "string",
-          "valueCount": 185
+          "valueCount": 229
         },
         {
           "name": "not_country[]",
@@ -11432,7 +11369,7 @@ export const marketCatalog: EndpointCatalog = {
           "type": "array",
           "description": "List of disallowed countries.",
           "items": "string",
-          "valueCount": 185
+          "valueCount": 229
         },
         {
           "name": "hypixel_ban",
@@ -12180,6 +12117,300 @@ export const marketCatalog: EndpointCatalog = {
             "month",
             "year"
           ]
+        }
+      ],
+      "description": "Displays a list of accounts in a specific category according to your parameters."
+    },
+    "Category.CapCut": {
+      "method": "GET",
+      "path": "/capcut",
+      "summary": "CapCut",
+      "scopes": [
+        "market"
+      ],
+      "params": [
+        {
+          "name": "after",
+          "in": "query",
+          "type": "string",
+          "description": "Next page cursor."
+        },
+        {
+          "name": "pmin",
+          "in": "query",
+          "type": "number",
+          "description": "Minimal price of account (Inclusive)."
+        },
+        {
+          "name": "pmax",
+          "in": "query",
+          "type": "number",
+          "description": "Maximum price of account (Inclusive)."
+        },
+        {
+          "name": "title",
+          "in": "query",
+          "type": "string",
+          "description": "The word or words contained in the account title."
+        },
+        {
+          "name": "order_by",
+          "in": "query",
+          "type": "string",
+          "description": "Order by.",
+          "values": [
+            "price_to_up",
+            "price_to_down",
+            "pdate_to_down",
+            "pdate_to_up",
+            "pdate_to_down_upload",
+            "pdate_to_up_upload",
+            "edate_to_up",
+            "edate_to_down",
+            "ddate_to_up",
+            "ddate_to_down",
+            "auto_buy_diff_to_up",
+            "auto_buy_diff_to_down"
+          ]
+        },
+        {
+          "name": "tag_id[]",
+          "in": "query",
+          "type": "array",
+          "description": "List of tag ids (Tag list is available via GET /me).",
+          "items": "integer"
+        },
+        {
+          "name": "not_tag_id[]",
+          "in": "query",
+          "type": "array",
+          "description": "List of tag ids that won't be included (Tag list is available via GET /me).",
+          "items": "integer"
+        },
+        {
+          "name": "public_tag_id[]",
+          "in": "query",
+          "type": "array",
+          "description": "List of tag ids (Tag list is available via GET /me).",
+          "items": "integer"
+        },
+        {
+          "name": "not_public_tag_id[]",
+          "in": "query",
+          "type": "array",
+          "description": "List of tag ids that won't be included (Tag list is available via GET /me).",
+          "items": "integer"
+        },
+        {
+          "name": "origin[]",
+          "in": "query",
+          "type": "array",
+          "description": "List of account origins.",
+          "items": "string",
+          "values": [
+            "brute",
+            "phishing",
+            "stealer",
+            "autoreg",
+            "personal",
+            "resale",
+            "dummy",
+            "self_registration",
+            "retrieve_via_support"
+          ]
+        },
+        {
+          "name": "not_origin[]",
+          "in": "query",
+          "type": "array",
+          "description": "List of account origins that won't be included.",
+          "items": "string",
+          "values": [
+            "brute",
+            "phishing",
+            "stealer",
+            "autoreg",
+            "personal",
+            "resale",
+            "dummy",
+            "self_registration",
+            "retrieve_via_support"
+          ]
+        },
+        {
+          "name": "user_id",
+          "in": "query",
+          "type": "integer",
+          "description": "Search accounts of user."
+        },
+        {
+          "name": "nsb",
+          "in": "query",
+          "type": "boolean",
+          "description": "Not sold before."
+        },
+        {
+          "name": "sb",
+          "in": "query",
+          "type": "boolean",
+          "description": "Sold before."
+        },
+        {
+          "name": "nsb_by_me",
+          "in": "query",
+          "type": "boolean",
+          "description": "Not sold by me before."
+        },
+        {
+          "name": "sb_by_me",
+          "in": "query",
+          "type": "boolean",
+          "description": "Sold by me before."
+        },
+        {
+          "name": "currency",
+          "in": "query",
+          "type": "string",
+          "description": "Currency in which the cost of the account will be searched.",
+          "values": [
+            "rub",
+            "uah",
+            "kzt",
+            "byn",
+            "usd",
+            "eur",
+            "gbp",
+            "cny",
+            "try",
+            "jpy",
+            "brl"
+          ]
+        },
+        {
+          "name": "email_login_data",
+          "in": "query",
+          "type": "boolean",
+          "description": "Has email login data."
+        },
+        {
+          "name": "email_provider[]",
+          "in": "query",
+          "type": "array",
+          "description": "Email provider.",
+          "items": "string",
+          "values": [
+            "other",
+            "rambler",
+            "outlook",
+            "firstmail",
+            "notletters",
+            "mail_ru"
+          ]
+        },
+        {
+          "name": "not_email_provider[]",
+          "in": "query",
+          "type": "array",
+          "description": "Email provider.",
+          "items": "string",
+          "values": [
+            "other",
+            "rambler",
+            "outlook",
+            "firstmail",
+            "notletters",
+            "mail_ru"
+          ]
+        },
+        {
+          "name": "parse_same_item_ids",
+          "in": "query",
+          "type": "boolean",
+          "description": "Parse same item ids."
+        },
+        {
+          "name": "subscription[]",
+          "in": "query",
+          "type": "array",
+          "description": "List of allowed CapCut subscriptions.",
+          "items": "string",
+          "values": [
+            "none",
+            "pro",
+            "ultra"
+          ]
+        },
+        {
+          "name": "subscription_length",
+          "in": "query",
+          "type": "integer",
+          "description": "Length of CapCut subscription."
+        },
+        {
+          "name": "subscription_period",
+          "in": "query",
+          "type": "string",
+          "description": "In what notation is time measured.",
+          "values": [
+            "day",
+            "month",
+            "year"
+          ]
+        },
+        {
+          "name": "credits_min",
+          "in": "query",
+          "type": "integer",
+          "description": "Minimum number of CapCut credits."
+        },
+        {
+          "name": "credits_max",
+          "in": "query",
+          "type": "integer",
+          "description": "Maximum number of CapCut credits."
+        },
+        {
+          "name": "dreamina_subscription[]",
+          "in": "query",
+          "type": "array",
+          "description": "List of allowed Dreamina subscriptions.",
+          "items": "string",
+          "values": [
+            "advanced",
+            "basic",
+            "none",
+            "standard",
+            "ultra"
+          ]
+        },
+        {
+          "name": "dreamina_subscription_length",
+          "in": "query",
+          "type": "integer",
+          "description": "Length of Dreamina subscription."
+        },
+        {
+          "name": "dreamina_subscription_period",
+          "in": "query",
+          "type": "string",
+          "description": "In what notation is time measured.",
+          "values": [
+            "day",
+            "month",
+            "year"
+          ]
+        },
+        {
+          "name": "dreamina_credits_min",
+          "in": "query",
+          "type": "integer",
+          "description": "Minimum number of Dreamina credits."
+        },
+        {
+          "name": "dreamina_credits_max",
+          "in": "query",
+          "type": "integer",
+          "description": "Maximum number of Dreamina credits."
         }
       ],
       "description": "Displays a list of accounts in a specific category according to your parameters."
