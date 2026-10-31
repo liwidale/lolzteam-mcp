@@ -1,7 +1,7 @@
 import type { EndpointCatalog } from "./types.ts";
 
 export const forumCatalog: EndpointCatalog = {
-  "version": "1.1.46",
+  "version": "1.1.46a",
   "endpoints": {
     "Assets.Css": {
       "method": "GET",
